@@ -1,0 +1,343 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% I, the copyright holder of this work, release this work into the
+%% public domain. This applies worldwide. In some countries this may
+%% not be legally possible; if so: I grant anyone the right to use
+%% this work for any purpose, without any conditions, unless such
+%% conditions are required by law.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[
+  digital,     %% The `digital` option enables the default options for the
+               %% digital version of a document. Replace with `printed`
+               %% to enable the default options for the printed version
+               %% of a document.
+%%  color,       %% Uncomment these lines (by removing the %% at the
+%%               %% beginning) to use color in the printed version of your
+%%               %% document
+  oneside,     %% The `oneside` option enables one-sided typesetting,
+               %% which is preferred if you are only going to submit a
+               %% digital version of your thesis. Replace with `twoside`
+               %% for double-sided typesetting if you are planning to
+               %% also print your thesis. For double-sided typesetting,
+               %% use at least 120 g/m² paper to prevent show-through.
+  nosansbold,  %% The `nosansbold` option prevents the use of the
+               %% sans-serif type face for bold text. Replace with
+               %% `sansbold` to use sans-serif type face for bold text.
+  nocolorbold, %% The `nocolorbold` option disables the usage of the
+               %% blue color for bold text, instead using black. Replace
+               %% with `colorbold` to use blue for bold text.
+  lof,         %% The `lof` option prints the List of Figures. Replace
+               %% with `nolof` to hide the List of Figures.
+  lot,         %% The `lot` option prints the List of Tables. Replace
+               %% with `nolot` to hide the List of Tables.
+]{fithesis4}
+%% The following section sets up the locales used in the thesis.
+\usepackage[resetfonts]{cmap} %% We need to load the T2A font encoding
+\usepackage[T1,T2A]{fontenc}  %% to use the Cyrillic fonts with Russian texts.
+\usepackage[
+  main=english, %% By using `czech` or `slovak` as the main locale
+                %% instead of `english`, you can typeset the thesis
+                %% in either Czech or Slovak, respectively.
+  english, german, czech, slovak %% The additional keys allow
+]{babel}        %% foreign texts to be typeset as follows:
+%%
+%%   \begin{otherlanguage}{german}  ... \end{otherlanguage}
+%%   \begin{otherlanguage}{czech}   ... \end{otherlanguage}
+%%   \begin{otherlanguage}{slovak}  ... \end{otherlanguage}
+%%
+%%
+%% The following section sets up the metadata of the thesis.
+\thesissetup{
+    date        = 2026/02/24,
+    university  = mu,
+    faculty     = fi,
+    type        = bc,
+    department  = ?,
+    author      = Adam David Malý,
+    gender      = m,
+    advisor     = {Honza + Martin},
+    title       = {Implementation of MCP Server for Red Hat OpenShift AI Workbenches},
+    TeXtitle    = {Implementation of MCP Server for Red Hat OpenShift AI Workbenches},
+    keywords    = {MCP, RHOAI, Workbench, Server, Implementation},
+    TeXkeywords = {MCP, RHOAI, Workbench, Server, Implementation},
+    abstract    = {
+      This thesis presents MCP server implementation for RHOAI workbenches.
+    },
+}
+\usepackage{makeidx}      %% The `makeidx` package contains
+\makeindex                %% helper commands for index typesetting.
+%% These additional packages are used within the document:
+\usepackage{paralist} %% Compact list environments
+\usepackage{amsmath}  %% Mathematics
+\usepackage{amsthm}
+\usepackage{amsfonts}
+\usepackage{url}      %% Hyperlinks
+\usepackage{markdown} %% Lightweight markup
+\usepackage{listings} %% Source code highlighting
+\lstset{
+  basicstyle      = \ttfamily,
+  identifierstyle = \color{black},
+  keywordstyle    = \color{blue},
+  keywordstyle    = {[2]\color{cyan}},
+  keywordstyle    = {[3]\color{olive}},
+  stringstyle     = \color{teal},
+  commentstyle    = \itshape\color{magenta},
+  breaklines      = true,
+}
+\usepackage{floatrow} %% Putting captions above tables
+\floatsetup[table]{capposition=top}
+\usepackage[babel]{csquotes} %% Context-sensitive quotation marks
+\usepackage[backend=biber, style=numeric]{biblatex}
+\addbibresource{example.bib}
+\begin{document}
+
+%% ---------------------------------------------------------------------------
+%% Chapter 1 -- Introduction
+%% ---------------------------------------------------------------------------
+\chapter{Introduction}
+\label{chap:introduction}
+
+Large language models (LLMs) have rapidly evolved from conversational
+assistants into capable agents that can reason, plan, and take actions in
+the real world. This shift has been made possible in part by the ability to
+give LLMs access to external \textit{tools} --- functions that let a model
+query a database, call an API, or manage infrastructure, all in response to
+a natural language request. As the ecosystem of such integrations grows, a
+key challenge emerges: how do different AI hosts and models connect to the
+ever-expanding set of tools and data sources in a consistent, interoperable
+way?
+
+Anthropic introduced the Model Context Protocol (MCP) in November
+2024~\parencite{mcp-announcement} to address exactly this problem. MCP is
+an open standard that defines how AI applications connect to external tools
+and data sources through a client-server architecture. Instead of each AI
+host maintaining its own bespoke integrations, any MCP-compatible host ---
+such as Cursor, Claude Desktop, or a custom agent --- can connect to any
+MCP server and immediately gain access to the capabilities it exposes. This
+has already led to a growing ecosystem of MCP servers for services ranging
+from databases and file systems to cloud APIs and developer tools.
+
+Red Hat OpenShift AI (RHOAI) is an enterprise machine learning platform
+built on top of Kubernetes and Red Hat OpenShift. One of its core features
+is \textit{workbenches} --- containerised JupyterLab environments that data
+scientists and engineers use for model development and experimentation.
+Managing workbenches today requires navigating the RHOAI web UI or writing
+Kubernetes manifests directly, tasks that are repetitive, context-switching,
+and ill-suited to the natural-language interaction style that AI agents
+enable. No MCP server exists for RHOAI workbench management.
+
+This thesis presents the design and implementation of an MCP server for
+RHOAI workbenches, written in Go using the official MCP Go
+SDK~\parencite{mcp-go-sdk}. The server exposes a comprehensive set of tools
+covering the full lifecycle of workbench management: listing, creating,
+updating, and deleting workbenches; managing notebook images and hardware
+profiles; handling persistent volume claims; querying namespaces and pods;
+and monitoring resource consumption at the workbench, namespace, user, and
+cluster level. A safety-oriented read-only mode is provided by default, with
+write operations gated behind an explicit environment variable. The server
+also exposes MCP resources and a guided prompt to assist agents in
+constructing correct workbench creation requests. Quality is validated
+through unit tests and automated evaluation using the Promptfoo
+framework~\parencite{promptfoo}, which measures tool selection accuracy,
+parameter extraction correctness, and execution success rate.
+
+\medskip
+
+The remainder of this thesis is structured as follows.
+Chapter~\ref{chap:ai-mcp} introduces the background concepts: large language
+models, the shift toward AI agents and tool use, and the Model Context
+Protocol in detail. Chapter~\ref{chap:rhoai} covers Red Hat OpenShift AI,
+the Kubernetes resources underlying workbenches, and the motivation for MCP
+tooling in this context. Chapter~\ref{chap:analysis} presents the analysis
+and design of the server, including requirements, architecture, and
+technology choices. Chapter~\ref{chap:implementation} describes the
+implementation in full. Chapter~\ref{chap:conclusion} concludes the thesis
+and outlines directions for future work.
+
+%% ---------------------------------------------------------------------------
+%% Chapter 2 -- Background: AI & MCP
+%% ---------------------------------------------------------------------------
+\chapter{Background: Artificial Intelligence and the Model Context Protocol}
+\label{chap:ai-mcp}
+
+\section{Large Language Models and AI Assistants}
+\label{sec:llms}
+
+At the core of modern AI assistants are \textit{large language models}
+(LLMs) --- neural networks trained to predict and generate text by learning
+statistical patterns from vast amounts of data. The dominant architectural
+foundation for LLMs is the \textit{Transformer}, introduced by Vaswani et
+al.\ in 2017~\parencite{vaswani2017attention}. The Transformer's
+self-attention mechanism allows the model to relate every token in a
+sequence to every other token, enabling it to capture long-range
+dependencies in text far more effectively than earlier recurrent
+architectures.
+
+Modern LLMs are trained in two main stages. In the first stage,
+\textit{pre-training}, the model is exposed to hundreds of billions of
+tokens of text and learns to predict the next token in a sequence. This
+process, while deceptively simple, causes the model to internalise broad
+world knowledge, reasoning patterns, and linguistic structure. In the second
+stage, the pre-trained model is fine-tuned to behave as a helpful assistant,
+typically through a combination of supervised instruction fine-tuning and
+reinforcement learning from human feedback
+(RLHF)~\parencite{ouyang2022rlhf}. The result is a model that responds to
+natural-language instructions in a coherent and useful way.
+
+The products of this pipeline --- systems such as OpenAI's ChatGPT, Anthropic's
+Claude, and Google's Gemini --- are commonly referred to as \textit{AI
+assistants}. An AI assistant takes a user's message as input and produces a
+textual response. It is fundamentally \textit{stateless} and
+\textit{passive}: it answers questions, drafts documents, and explains
+concepts, but it does not take actions in the world, does not maintain
+persistent memory across sessions by default, and cannot access information
+beyond its training data or the content of the current conversation. This
+passivity is the key limitation that the agentic paradigm, described in the
+next section, seeks to overcome.
+
+\section{AI Agents and Tool Use}
+\label{sec:ai-agents}
+
+Despite their impressive capabilities, pure language models have a
+fundamental constraint: they are isolated from the external world. Their
+knowledge has a training cutoff date, they cannot query live systems, and
+they cannot take actions with real-world consequences. The concept of an
+\textit{AI agent} addresses this by equipping a language model with
+\textit{tools} --- discrete, callable functions that the model can invoke to
+interact with external systems, retrieve fresh information, or modify state.
+
+The key mechanism enabling agents is \textit{tool calling} (also referred
+to as \textit{function calling}). When a model is given a set of tool
+definitions alongside a user request, it can --- instead of producing a
+plain text response --- output a structured call to one of those tools,
+specifying the tool name and the required arguments. The host application
+intercepts this call, executes the corresponding function, and feeds the
+result back into the model's context, after which the model continues its
+reasoning. This loop can repeat multiple times within a single interaction,
+allowing the model to chain tool calls to complete complex, multi-step
+tasks.
+
+A widely cited formalisation of this pattern is the \textit{ReAct}
+framework~\parencite{yao2022react}, which interleaves \textit{reasoning}
+traces with \textit{acting} steps. At each step, the model first produces a
+chain-of-thought reasoning trace --- thinking through what it knows and what
+it needs --- and then selects and executes an action (a tool call). The
+observation returned by the tool becomes part of the context for the next
+reasoning step. This structured loop gives agents a degree of
+\textit{autonomy}: given a high-level goal, an agent can decompose it into
+sub-tasks, select appropriate tools, and adapt its plan based on the results
+it receives, without requiring the user to specify each individual step.
+
+The practical impact of tool use is significant. An agent equipped with the
+right tools can list resources in a Kubernetes cluster, start or stop
+workbenches, query resource consumption metrics, and create new
+infrastructure --- all in response to a single natural-language instruction
+such as \enquote{show me which workbenches are running in the production
+namespace and stop any that have been idle for more than a day}. Realising
+this kind of interaction for Red Hat OpenShift AI workbenches requires a
+standardised way to expose those capabilities to any AI agent --- which is
+precisely the problem the Model Context Protocol solves.
+
+\section{The Model Context Protocol}
+\label{sec:mcp}
+
+\subsection{Protocol Overview}
+\label{subsec:mcp-overview}
+
+\subsection{MCP Clients and Servers}
+\label{subsec:mcp-clients-servers}
+
+\subsection{Transport Mechanisms}
+\label{subsec:mcp-transport}
+
+\subsection{Tools, Resources, and Prompts}
+\label{subsec:mcp-primitives}
+
+%% ---------------------------------------------------------------------------
+%% Chapter 2 -- Background: RHOAI & Workbenches
+%% ---------------------------------------------------------------------------
+\chapter{Background: Red Hat OpenShift AI and Workbenches}
+\label{chap:rhoai}
+
+\section{Kubernetes and OpenShift}
+\label{sec:kubernetes}
+
+\section{Red Hat OpenShift AI}
+\label{sec:rhoai}
+
+\section{Workbenches}
+\label{sec:workbenches}
+
+\section{MCP Tooling in RHOAI}
+\label{sec:mcp-in-rhoai}
+
+%% ---------------------------------------------------------------------------
+%% Chapter 3 -- Analysis and Design
+%% ---------------------------------------------------------------------------
+\chapter{Analysis and Design}
+\label{chap:analysis}
+
+\section{Motivation and Goals}
+\label{sec:motivation}
+
+\section{Requirements}
+\label{sec:requirements}
+
+\section{Architecture}
+\label{sec:architecture}
+
+\section{Technology Choices}
+\label{sec:technologies}
+
+%% ---------------------------------------------------------------------------
+%% Chapter 4 -- Implementation
+%% ---------------------------------------------------------------------------
+\chapter{Implementation}
+\label{chap:implementation}
+
+\section{Project Structure}
+\label{sec:project-structure}
+
+\section{MCP Tools}
+\label{sec:tools}
+
+\subsection{Workbench Management}
+\label{subsec:workbench-tools}
+
+\subsection{Hardware Profiles}
+\label{subsec:hardware-tools}
+
+\subsection{Notebook Images}
+\label{subsec:image-tools}
+
+\subsection{Storage and Namespaces}
+\label{subsec:storage-tools}
+
+\subsection{Resource Consumption}
+\label{subsec:resource-tools}
+
+\section{MCP Resources and Prompts}
+\label{sec:resources-prompts}
+
+\section{Security}
+\label{sec:security}
+
+\section{Code Quality}
+\label{sec:code-quality}
+
+\section{Evaluation}
+\label{sec:evaluation}
+
+%% ---------------------------------------------------------------------------
+%% Chapter 5 -- Conclusion
+%% ---------------------------------------------------------------------------
+\chapter{Conclusion}
+\label{chap:conclusion}
+
+\section{Future Work: Notebooks 2.0}
+\label{sec:future-work}
+
+%% ---------------------------------------------------------------------------
+\printbibliography[heading=bibintoc]
+
+\end{document}

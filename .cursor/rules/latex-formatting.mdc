@@ -1,0 +1,177 @@
+---
+globs: *.tex,*.bib
+---
+# LaTeX Thesis Formatting Rules
+
+This project is a Masaryk University Faculty of Informatics bachelor's thesis using the `fithesis4` document class. The reference formatting examples are in [formatting.tex](mdc:formatting.tex) and the main thesis file is [bachelor_thesis.tex](mdc:bachelor_thesis.tex).
+
+## Implementation Source Code
+
+The thesis describes the implementation found in `/home/amaly/mcp-server-rhoai/`. **Whenever writing about the implementation, always look up the actual source files there first.** The project structure is:
+
+- [main.go](mdc:../mcp-server-rhoai/main.go) — entry point and server setup
+- [core/types.go](mdc:../mcp-server-rhoai/core/types.go) — shared types
+- [core/logging.go](mdc:../mcp-server-rhoai/core/logging.go) — logging setup
+- [tools/workbench_tools.go](mdc:../mcp-server-rhoai/tools/workbench_tools.go) — workbench create/list/delete/status tools
+- [tools/hardware_profile_tools.go](mdc:../mcp-server-rhoai/tools/hardware_profile_tools.go) — hardware profile tools
+- [tools/image_tools.go](mdc:../mcp-server-rhoai/tools/image_tools.go) — notebook image tools
+- [tools/namespace_tools.go](mdc:../mcp-server-rhoai/tools/namespace_tools.go) — namespace tools
+- [tools/pod_tools.go](mdc:../mcp-server-rhoai/tools/pod_tools.go) — pod tools
+- [tools/storage_tools.go](mdc:../mcp-server-rhoai/tools/storage_tools.go) — PVC/storage tools
+- [tools/resource_consumption_tools.go](mdc:../mcp-server-rhoai/tools/resource_consumption_tools.go) — resource usage tools
+- [tools/common.go](mdc:../mcp-server-rhoai/tools/common.go) — shared tool helpers
+- [tools/registry.go](mdc:../mcp-server-rhoai/tools/registry.go) — tool registration
+- [prompts/create_workbench_prompt.go](mdc:../mcp-server-rhoai/prompts/create_workbench_prompt.go) — MCP prompt definitions
+- [prompts/registry.go](mdc:../mcp-server-rhoai/prompts/registry.go) — prompt registration
+- [resources/image_catalog.go](mdc:../mcp-server-rhoai/resources/image_catalog.go) — image catalog resource
+- [resources/default_hardware_profile.go](mdc:../mcp-server-rhoai/resources/default_hardware_profile.go) — default hardware profile resource
+- [resources/registry.go](mdc:../mcp-server-rhoai/resources/registry.go) — resource registration
+- [go.mod](mdc:../mcp-server-rhoai/go.mod) — Go module and dependencies
+- [README.md](mdc:../mcp-server-rhoai/README.md) — project documentation
+
+Always follow these rules when writing or editing `.tex` content:
+
+## Document Structure
+
+- All chapters are **numbered** — use `\chapter{Title}` with a `\label{chap:key}` on the next line. Do NOT use `\chapter*`.
+- Section hierarchy: `\chapter` → `\section` → `\subsection` → `\subsubsection` → `\paragraph` → `\subparagraph`.
+- Appendices go after `\appendix` at the end of the document, before `\end{document}`.
+
+## Quotation Marks
+
+- Always use `\enquote{text}` (from the `csquotes` package) — **never** use `''text''` or `"text"`.
+
+## Lists
+
+- For paragraph-spaced lists use `\begin{itemize}`, `\begin{enumerate}`, `\begin{description}`.
+- For compact word/phrase lists use `\begin{compactitem}` and `\begin{compactenum}` (from `paralist`).
+- Nested lists are supported in both styles.
+
+## Fonts and Emphasis
+
+- Body emphasis: `\textit{text}` (italics)
+- Code/monospace: `\texttt{text}`
+- Bold: `\textbf{text}`
+- Small caps: `\textsc{text}`
+- Sans-serif: `\textsf{text}`
+- Do **not** change font sizes manually in body text.
+
+## Mathematics
+
+- Inline math: `$...$`
+- Display unnumbered: `\[...\]`
+- Numbered equation: `\begin{equation}...\end{equation}`
+- Multi-line: `\begin{align}`, `\begin{alignat}`, `\begin{multline}`, `\begin{gather}`
+- Conditional: `\begin{cases}` inside an `equation` environment
+- Always label equations you reference: `\label{eq:key}`, cite with `\eqref{eq:key}`
+
+## Theorems, Lemmas, Proofs
+
+Define once in the preamble, then use `\begin{theorem}`, `\begin{lemma}`, `\begin{proof}`, `\begin{corollary}`, `\begin{definition}`, `\begin{remark}`.
+
+## Figures
+
+- Wrap in `\begin{figure}...\end{figure}` with `\begin{center}` inside.
+- Always include `\caption{}` and `\label{fig:key}`.
+- Minimum image resolution: 100 px/cm. Optimum: 250 px/cm.
+
+## Tables
+
+- Use `tabularx` with `\textwidth` for full-width tables.
+- Use `\toprule`, `\midrule`, `\bottomrule` (booktabs) — never `\hline`.
+- Captions go **above** tables (floatrow is configured for this).
+- Always include `\caption{}` and `\label{tab:key}`.
+
+## Cross-References
+
+- Label everything: `\label{chap:key}`, `\label{sec:key}`, `\label{fig:key}`, `\label{tab:key}`, `\label{eq:key}`.
+- Reference with `Chapter~\ref{chap:key}`, `Figure~\ref{fig:key}`, `Table~\ref{tab:key}`.
+- Use `~` before `\ref{}` to prevent line breaks.
+- Use `\eqref{eq:key}` for equation references.
+
+## Bibliography and Citations
+
+The bibliography file is [example.bib](mdc:example.bib). The project uses **biblatex with the biber backend and numeric style** (`\usepackage[backend=biber, style=numeric]{biblatex}`).
+
+### Citation commands
+
+- Parenthetical citation (most common): `\parencite{key}` → [1]
+- Inline author citation: `\textcite{key}` → Author [1]
+- Multiple sources at once: `\parencite{key1,key2}`
+- Title only: `\citetitle{key}`
+- Author only: `\citeauthor{key}`
+- Year only: `\citeyear{key}`
+- Footnote with full details: `\footfullcite{key}`
+- Print bibliography at end: `\printbibliography[heading=bibintoc]`
+
+### What MUST be cited
+
+Every factual claim that is not your own original work needs a citation. This includes:
+- Definitions and explanations of technologies (LLMs, Kubernetes, MCP, RHOAI, etc.)
+- Statistics or benchmark numbers
+- Design decisions or architectural patterns borrowed from external sources
+- Quotes or paraphrased ideas from papers, docs, or books
+- Tool versions, specifications, or protocol descriptions (e.g. MCP spec, Kubernetes API)
+
+### What does NOT need a citation
+
+- Your own implementation decisions and observations
+- General knowledge in the field (e.g. "Python is an interpreted language")
+- Results you measured yourself
+
+### Adding entries to example.bib
+
+Use **biblatex field names** (not plain BibTeX). Key fields per type:
+
+```bibtex
+@ONLINE{key,           % for websites, docs, specs
+  author    = {Name},  % or publisher = {Org} if no author
+  title     = {Title},
+  date      = {2024},
+  url       = {https://...},
+  urldate   = {2026-03-10},
+  langid    = {english}
+}
+
+@BOOK{key,
+  author    = {Last, First},
+  title     = {Title},
+  date      = {2023},
+  publisher = {Publisher},
+  langid    = {english}
+}
+
+@ARTICLE{key,
+  author       = {Last, First},
+  title        = {Title},
+  journaltitle = {Journal Name},
+  date         = {2023},
+  volume       = {1},
+  number       = {1},
+  pages        = {1--10},
+  langid       = {english}
+}
+```
+
+- Use `date` not `year` (biblatex style)
+- Use `location` not `address`
+- Use `journaltitle` not `journal`
+- Separate multiple authors/editors with ` and `
+- Do NOT put `%` comments inside `@ENTRY{}` blocks — bibtex does not treat `%` as a comment inside entries
+
+## Footnotes and URLs
+
+- Footnotes: `\footnote{text}`
+- URLs: `\url{https://...}` (from the `url` package)
+
+## Source Code Listings
+
+- Block: `\begin{lstlisting}[language=Python]...\end{lstlisting}` (listings package)
+- Inline: `\verb|code|` or `\texttt{code}`
+
+## Index Entries
+
+- Single entry: `\index{term}`
+- Ranged: `\index{term|(}` ... `\index{term|)}`
+- Sort key: `\index{alpha@$\alpha$}`
+- Hierarchical: `\index{parent!child}`
