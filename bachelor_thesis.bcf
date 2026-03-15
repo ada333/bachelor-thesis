@@ -2378,6 +2378,13 @@
     <bcf:citekey order="4" intorder="1">vaswani2017attention</bcf:citekey>
     <bcf:citekey order="5" intorder="1">ouyang2022rlhf</bcf:citekey>
     <bcf:citekey order="6" intorder="1">yao2022react</bcf:citekey>
+    <bcf:citekey order="7" intorder="1">mcp-announcement</bcf:citekey>
+    <bcf:citekey order="8" intorder="1">lsp-spec</bcf:citekey>
+    <bcf:citekey order="9" intorder="1">jsonrpc-spec</bcf:citekey>
+    <bcf:citekey order="10" intorder="1">mcp-go-sdk</bcf:citekey>
+    <bcf:citekey order="11" intorder="1">mcp-spec</bcf:citekey>
+    <bcf:citekey order="12" intorder="1">mcp-spec</bcf:citekey>
+    <bcf:citekey order="13" intorder="1">mcp-spec</bcf:citekey>
   </bcf:section>
   <!-- SORTING TEMPLATES -->
   <bcf:sortingtemplate name="nty">

@@ -33,6 +33,7 @@
       \strng{authornamehash}{f431db65cea024a5f19eab835afefee2}
       \strng{authorfullhash}{f431db65cea024a5f19eab835afefee2}
       \strng{authorfullhashraw}{f431db65cea024a5f19eab835afefee2}
+      \field{extraname}{1}
       \field{sortinit}{A}
       \field{sortinithash}{2f401846e2029bad6b3ecc16d50031e2}
       \field{labelnamesource}{author}
@@ -52,6 +53,106 @@
       \endverb
       \verb{url}
       \verb https://www.anthropic.com/news/model-context-protocol
+      \endverb
+    \endentry
+    \entry{mcp-spec}{online}{}{}
+      \name{author}{1}{}{%
+        {{hash=f431db65cea024a5f19eab835afefee2}{%
+           family={Anthropic},
+           familyi={A\bibinitperiod}}}%
+      }
+      \strng{namehash}{f431db65cea024a5f19eab835afefee2}
+      \strng{fullhash}{f431db65cea024a5f19eab835afefee2}
+      \strng{fullhashraw}{f431db65cea024a5f19eab835afefee2}
+      \strng{bibnamehash}{f431db65cea024a5f19eab835afefee2}
+      \strng{authorbibnamehash}{f431db65cea024a5f19eab835afefee2}
+      \strng{authornamehash}{f431db65cea024a5f19eab835afefee2}
+      \strng{authorfullhash}{f431db65cea024a5f19eab835afefee2}
+      \strng{authorfullhashraw}{f431db65cea024a5f19eab835afefee2}
+      \field{extraname}{2}
+      \field{sortinit}{A}
+      \field{sortinithash}{2f401846e2029bad6b3ecc16d50031e2}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{langid}{english}
+      \field{title}{Model Context Protocol Specification}
+      \field{urlday}{10}
+      \field{urlmonth}{3}
+      \field{urlyear}{2026}
+      \field{year}{2024}
+      \field{dateera}{ce}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb https://spec.modelcontextprotocol.io
+      \endverb
+      \verb{url}
+      \verb https://spec.modelcontextprotocol.io
+      \endverb
+    \endentry
+    \entry{jsonrpc-spec}{online}{}{}
+      \name{author}{1}{}{%
+        {{hash=51d40c3ba48b0cca212ff0d6bc064d82}{%
+           family={{JSON-RPC Working Group}},
+           familyi={J\bibinitperiod}}}%
+      }
+      \strng{namehash}{51d40c3ba48b0cca212ff0d6bc064d82}
+      \strng{fullhash}{51d40c3ba48b0cca212ff0d6bc064d82}
+      \strng{fullhashraw}{51d40c3ba48b0cca212ff0d6bc064d82}
+      \strng{bibnamehash}{51d40c3ba48b0cca212ff0d6bc064d82}
+      \strng{authorbibnamehash}{51d40c3ba48b0cca212ff0d6bc064d82}
+      \strng{authornamehash}{51d40c3ba48b0cca212ff0d6bc064d82}
+      \strng{authorfullhash}{51d40c3ba48b0cca212ff0d6bc064d82}
+      \strng{authorfullhashraw}{51d40c3ba48b0cca212ff0d6bc064d82}
+      \field{sortinit}{J}
+      \field{sortinithash}{b2f54a9081ace9966a7cb9413811edb4}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{langid}{english}
+      \field{title}{{JSON-RPC} 2.0 Specification}
+      \field{urlday}{10}
+      \field{urlmonth}{3}
+      \field{urlyear}{2026}
+      \field{year}{2013}
+      \field{dateera}{ce}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb https://www.jsonrpc.org/specification
+      \endverb
+      \verb{url}
+      \verb https://www.jsonrpc.org/specification
+      \endverb
+    \endentry
+    \entry{lsp-spec}{online}{}{}
+      \name{author}{1}{}{%
+        {{hash=140864078aeca1c7c35b4beb33c53c34}{%
+           family={{Microsoft}},
+           familyi={M\bibinitperiod}}}%
+      }
+      \strng{namehash}{140864078aeca1c7c35b4beb33c53c34}
+      \strng{fullhash}{140864078aeca1c7c35b4beb33c53c34}
+      \strng{fullhashraw}{140864078aeca1c7c35b4beb33c53c34}
+      \strng{bibnamehash}{140864078aeca1c7c35b4beb33c53c34}
+      \strng{authorbibnamehash}{140864078aeca1c7c35b4beb33c53c34}
+      \strng{authornamehash}{140864078aeca1c7c35b4beb33c53c34}
+      \strng{authorfullhash}{140864078aeca1c7c35b4beb33c53c34}
+      \strng{authorfullhashraw}{140864078aeca1c7c35b4beb33c53c34}
+      \field{sortinit}{M}
+      \field{sortinithash}{4625c616857f13d17ce56f7d4f97d451}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{langid}{english}
+      \field{title}{Language Server Protocol Specification}
+      \field{urlday}{10}
+      \field{urlmonth}{3}
+      \field{urlyear}{2026}
+      \field{year}{2016}
+      \field{dateera}{ce}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb https://microsoft.github.io/language-server-protocol/
+      \endverb
+      \verb{url}
+      \verb https://microsoft.github.io/language-server-protocol/
       \endverb
     \endentry
     \entry{mcp-go-sdk}{online}{}{}
