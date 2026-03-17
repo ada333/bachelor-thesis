@@ -100,7 +100,7 @@
 Large language models (LLMs) have rapidly evolved in recent years from
 conversational assistants into capable agents that can reason, plan, and take
 actions in the real world. This shift has been made possible by the ability
-to give LLMs access to external \textit{tools} -- functions that let a model
+to give LLMs access to external \textit{tools} --- functions that let a model
 query a database, call an API, or manage infrastructure, all in response to a
 natural language request. As the need for such integrations grows, a key
 challenge emerges: how do different AI hosts and models connect to the
@@ -118,18 +118,18 @@ and file systems to cloud APIs and developer tools.
 
 Red Hat OpenShift AI (RHOAI) is an enterprise machine learning platform
 built on top of Red Hat OpenShift (which is based on Kubernetes). One of its
-core features are workbenches -- containerised JupyterLab environments that
+core features are workbenches --- containerised JupyterLab environments that
 data scientists and engineers use for model training and experimentation.
 Managing clusters with many workbench instances can be a tedious and
 error-prone task, currently requiring navigation of the RHOAI web UI or
 direct manipulation of Kubernetes resources. The goal of this thesis is to
 eliminate that problem by allowing users to manage their workbenches entirely
-through natural language -- simply describing what they want to an AI agent,
+through natural language --- simply describing what they want to an AI agent,
 which then carries out the necessary operations on their behalf.
 
 This thesis presents the design and implementation of an MCP server for
 RHOAI workbenches, written in Go using the official MCP Go
-SDK~\parencite{mcp-go-sdk}. The server exposes a comprehensive set of tools
+SDK~\parencite{mcp-github}. The server exposes a comprehensive set of tools
 covering the full lifecycle of workbench management: listing, creating,
 updating, and deleting workbenches; managing notebook images and hardware
 profiles; handling persistent volume claims; querying namespaces and pods;
@@ -156,7 +156,7 @@ use, then describes the Model Context Protocol in detail.
 \label{sec:llms}
 
 At the core of modern AI assistants are \textit{large language models}
-(LLMs) -- neural networks trained to predict and generate text by learning
+(LLMs) --- neural networks trained to predict and generate text by learning
 statistical patterns from vast amounts of data. The dominant architectural
 foundation for LLMs is the \textit{Transformer}, introduced by Vaswani et
 al.\ in 2017~\parencite{vaswani2017attention}. The Transformer's
@@ -178,8 +178,8 @@ reinforcement learning from human feedback
 (RLHF)~\parencite{ouyang2022rlhf}. The result is a model that responds to
 natural-language instructions in a coherent and useful way.
 
-The products of this pipeline -- systems such as OpenAI's ChatGPT, Anthropic's
-Claude, and Google's Gemini -- are commonly referred to as \textit{AI
+The products of this pipeline --- systems such as OpenAI's ChatGPT, Anthropic's
+Claude, and Google's Gemini --- are commonly referred to as \textit{AI
 assistants}. An AI assistant takes a user's message as input and produces a
 textual response. It is fundamentally \textit{stateless} and
 \textit{passive}: it answers questions, drafts documents, and explains
@@ -193,12 +193,12 @@ next section, overcomes.
 \label{sec:ai-agents}
 
 Despite their impressive capabilities, pure language models are isolated from
-the external world -- their knowledge does not extend beyond their training
+the external world --- their knowledge does not extend beyond their training
 data, they cannot query other systems, and they cannot take actions. The
 concept of an \textit{AI agent} overcomes these limitations by equipping a
-language model with \textit{tools} -- callable functions that the model can
+language model with \textit{tools} --- callable functions that the model can
 invoke to interact with external systems, retrieve fresh information, or
-modify state. Agents can also be given \textit{memory} -- the ability to
+modify state. Agents can also be given \textit{memory} --- the ability to
 retain information across steps or sessions. This can range from simply
 keeping the full conversation history in the model's context window, to
 reading and writing records in an external database via dedicated memory
@@ -206,8 +206,8 @@ tools.
 
 The key mechanism enabling this is \textit{tool calling} (also referred to
 as \textit{function calling}). When a model is given a set of tool
-definitions alongside a user request, it can -- instead of producing a plain
-text response -- output a structured call to one of those tools, specifying
+definitions alongside a user request, it can --- instead of producing a plain
+text response --- output a structured call to one of those tools, specifying
 the tool name and the required arguments. The host application intercepts
 this call, executes the corresponding function, and feeds the result back
 into the model's context, after which the model continues its reasoning.
@@ -216,8 +216,8 @@ model to chain tool calls to complete complex, multi-step tasks.
 
 Yao et al.\ formalised this pattern in \textit{ReAct}~\parencite{yao2022react},
 which unifies \textit{reasoning} and \textit{acting} into a single loop:
-the model first produces a chain-of-thought reasoning trace -- thinking
-through what it knows and what it needs -- and then selects and executes an
+the model first produces a chain-of-thought reasoning trace --- thinking
+through what it knows and what it needs --- and then selects and executes an
 action (a tool call). The output returned by the tool becomes part of the
 context for the next reasoning step. This structured loop gives agents a
 degree of \textit{autonomy}: given a high-level goal, an agent can decompose
@@ -226,10 +226,10 @@ the results it receives.
 
 The practical impact of tool use is significant. An agent equipped with the
 right tools can list resources in a Kubernetes cluster, query resource
-consumption metrics, and delete workbench instances -- all in response to a
+consumption metrics, and delete workbench instances --- all in response to a
 single natural-language instruction such as \enquote{delete workbenches
 running for more than a week}. The Model Context Protocol provides a
-standardised way of exposing those capabilities to any AI agent.
+standardised way of exposing those capabilities to any AI host.
 
 \section{The Model Context Protocol}
 \label{sec:mcp}
@@ -243,50 +243,121 @@ applications connect to external tools and data sources. Its core motivation
 is the \textit{M$\times$N integration problem}: without a shared standard,
 connecting $M$ AI hosts to $N$ external services requires up to $M \times N$
 custom integrations, each with its own authentication, serialisation, and
-error-handling logic. MCP collapses this to $M + N$ by providing a single
+error-handling logic. MCP reduces this to $M + N$ by providing a single
 protocol that both sides implement once.
 
-The design of MCP draws inspiration from the Language Server Protocol
-(LSP)~\parencite{lsp-spec}, which solved an analogous problem in software
-development by standardising communication between code editors and language
-analysis tools. Just as LSP allowed any compliant editor to work with any
-compliant language server without bespoke glue code, MCP allows any
-compliant AI host to work with any compliant tool server. The protocol
-is transport-agnostic and message-based, built on top of
-JSON-RPC~2.0~\parencite{jsonrpc-spec}. Official SDKs are available for
-Python, TypeScript, Go, and other languages~\parencite{mcp-go-sdk}.
+The protocol is \textit{transport-agnostic} and message-based, built on top
+of JSON-RPC~2.0~\parencite{jsonrpc-spec}. Official SDKs are available for
+Python, TypeScript, Go, and other languages~\parencite{mcp-github}.
 
-\subsection{MCP Clients and Servers}
+\subsection{MCP Components}
 \label{subsec:mcp-clients-servers}
 
-The MCP architecture defines three distinct roles: \textit{hosts},
+The MCP architecture defines three main components: \textit{hosts},
 \textit{clients}, and \textit{servers}.
 
 A \textbf{host} is the AI application that the end user interacts with
-directly -- for example Claude Desktop, Cursor, or a custom agent
+directly --- for example Claude Desktop, Cursor, or a custom agent
 application. The host is responsible for managing the user interaction,
-sending messages to the LLM, and orchestrating tool calls.
+sending messages to the LLM, orchestrating tool calls, and processing the output of the LLM.
 
 A \textbf{client} is a component that lives inside the host and manages
 exactly one connection to one MCP server. A single host can run multiple
 clients simultaneously, each connected to a different server, giving the
 agent access to multiple sets of tools at once. The client speaks the MCP
-protocol on behalf of the host: it sends requests to the server, receives
+protocol on behalf of the host --- it sends requests to the server, receives
 responses and notifications, and forwards results back to the LLM context.
+Beyond handling requests, clients can also expose their own capabilities
+to servers, enabling server-initiated interactions described in
+Section~\ref{subsec:mcp-client-capabilities}.
 
-A \textbf{server} is a lightweight process that exposes capabilities to
-clients. A server typically wraps one specific external system -- a database,
+A \textbf{server} is a lightweight process that exposes capabilities (tools, resources, and prompts) to
+clients~\parencite{mcp-spec}. A server typically wraps one specific external system --- a database,
 a cloud API, a file system, or in the case of this thesis, Red Hat OpenShift
-AI. The server does not communicate with the LLM directly; it only
+AI workbenches. It contains the actual implementation of each capability.
+When a tool is invoked, the server executes the corresponding logic and
+returns the result. The server does not communicate with the LLM directly --- it only
 communicates with the client that is connected to it. This separation of
-concerns means that server authors do not need to know anything about which
-LLM or host will ultimately consume their tools.
+roles means that server authors do not need to know anything about which
+LLM or host will use their tools and other capabilities.
+The server-exposed primitives are described in
+Section~\ref{subsec:mcp-primitives}.
+
+\subsection{Client Capabilities}
+\label{subsec:mcp-client-capabilities}
+
+While servers expose tools, resources, and prompts, clients can expose
+their own capabilities back to servers, allowing servers to initiate
+certain interactions rather than only responding to them.
+MCP defines three such client capabilities~\parencite{mcp-spec}.
+
+\textbf{Sampling} lets a server ask the client to generate an LLM
+completion on its behalf. This enables servers to perform agentic
+sub-tasks --- such as summarising a result or deciding a next step ---
+without needing direct access to any language model.
+
+\textbf{Roots} allow a server to query the client about the filesystem
+or URI boundaries it is permitted to operate in, so that servers
+respect the scope defined by the host environment.
+
+\textbf{Elicitation} lets a server request additional information from
+the user through the host, for example asking for a confirmation or a
+missing parameter before proceeding with an operation.
+
+\subsection{Server Capabilities}
+\label{subsec:mcp-primitives}
+
+MCP servers expose capabilities to clients through three primitive types:
+tools, resources, and prompts~\parencite{mcp-spec}.
+
+\textbf{Tools} are the primary mechanism for giving an AI agent the ability
+to act. Each tool has a name, a human-readable description, and a JSON Schema
+that describes its input parameters. When the LLM decides that a tool is
+needed to fulfil a request, it emits a structured tool call containing the
+tool name and arguments. The host executes the call via the client and
+returns the result to the model's context. Tools are \textit{model-initiated}
+--- it is the LLM that decides when and how to invoke them. This thesis
+implements tools for the full workbench management lifecycle: listing,
+creating, updating, and deleting workbenches, notebook images, hardware
+profiles, persistent volume claims, and namespaces, as well as tools for
+monitoring resource consumption.
+
+\textbf{Resources} are URI-addressed data that the host can read and inject
+into the model's context. Unlike tools, resources are \textit{host-initiated} ---
+it is the host or the user that decides which resources to include, not the
+model. While conceptually similar to Retrieval-Augmented Generation
+(RAG)~\parencite{lewis2020rag},
+where relevant documents are retrieved and injected into the prompt, MCP
+resources differ in that they are explicitly declared by the server and
+selected by the host or user, rather than retrieved automatically through
+a similarity search.
+This thesis exposes two
+resources: an \textit{Image Catalog}, which lists all notebook images
+available in the cluster with their versions and Python dependencies; and a
+\textit{Default Hardware Profile}, which describes the default CPU and memory
+allocation for new workbenches. An agent can read these resources before
+calling the Create Workbench tool to ensure it selects a valid image and
+reasonable resource limits.
+
+\textbf{Prompts} are pre-defined, parameterisable message templates that
+guide the model's behaviour for a specific task. A prompt can be invoked by
+the user or the host and expands into one or more messages that are injected
+into the conversation. This thesis provides a \textit{Create Workbench}
+prompt that instructs the agent to first consult the Image Catalog resource
+to select a suitable image and then invoke the Create Workbench tool --- a
+pattern that combines all three MCP server primitives in a single guided workflow.
 
 \subsection{Transport Mechanisms}
 \label{subsec:mcp-transport}
 
-MCP is transport-agnostic at the protocol level but defines two standard
-transport mechanisms~\parencite{mcp-spec}.
+MCP is transport-agnostic (the protocol defines the structure of messages
+but not how they are physically carried between endpoints) and defines two
+standard transport mechanisms~\parencite{mcp-spec} --- these are the transports
+supported by the official SDKs~\parencite{mcp-github} and used by the
+ecosystem in practice. All messages follow the
+JSON-RPC~2.0 format~\parencite{jsonrpc-spec}, a lightweight remote
+procedure call protocol in which each request and response is a single JSON
+object identified by a method name and a unique request identifier.
 
 \textbf{Standard I/O (stdio)} is the simplest transport. The host launches
 the MCP server as a child process and communicates with it over the process's
@@ -294,7 +365,7 @@ standard input and standard output streams. Each JSON-RPC message is a
 newline-delimited JSON object. This transport requires no network
 configuration, has no authentication overhead, and is inherently scoped to
 the local machine, making it well-suited for locally-installed tools. The
-server implemented in this thesis uses the stdio transport, as reflected in
+server implemented in this thesis uses the stdio transport, initialised in
 the entry point:
 
 \begin{lstlisting}[language=Go]
@@ -309,44 +380,6 @@ and remote infrastructure management. A newer \textit{Streamable HTTP}
 transport, which consolidates both directions into a single HTTP endpoint, is
 also defined in the specification as the recommended transport for new remote
 deployments~\parencite{mcp-spec}.
-
-\subsection{Tools, Resources, and Prompts}
-\label{subsec:mcp-primitives}
-
-MCP servers expose capabilities to clients through three primitive types:
-tools, resources, and prompts~\parencite{mcp-spec}.
-
-\textbf{Tools} are the primary mechanism for giving an AI agent the ability
-to act. Each tool has a name, a human-readable description, and a JSON Schema
-that describes its input parameters. When the LLM decides that a tool is
-needed to fulfil a request, it emits a structured tool call containing the
-tool name and arguments; the host executes the call via the client and
-returns the result to the model's context. Tools are \textit{model-initiated}
--- it is the LLM that decides when and how to invoke them. This thesis
-implements tools for the full workbench management lifecycle: listing,
-creating, updating, and deleting workbenches, notebook images, hardware
-profiles, persistent volume claims, and namespaces, as well as tools for
-monitoring resource consumption.
-
-\textbf{Resources} are URI-addressed data that the host can read and inject
-into the model's context. Unlike tools, resources are \textit{host-initiated}:
-it is the host or the user that decides which resources to include, not the
-model. Resources are useful for providing structured reference data that the
-model should be aware of when making decisions. This thesis exposes two
-resources: an \textit{Image Catalog}, which lists all notebook images
-available in the cluster with their versions and Python dependencies; and a
-\textit{Default Hardware Profile}, which describes the default CPU and memory
-allocation for new workbenches. An agent can read these resources before
-calling the Create Workbench tool to ensure it selects a valid image and
-reasonable resource limits.
-
-\textbf{Prompts} are pre-defined, parameterisable message templates that
-guide the model's behaviour for a specific task. A prompt can be invoked by
-the user or the host and expands into one or more messages that are injected
-into the conversation. This thesis provides a \textit{Create Workbench}
-prompt that instructs the agent to first consult the Image Catalog resource
-to select a suitable image and then invoke the Create Workbench tool -- a
-pattern that combines all three MCP primitives in a single guided workflow.
 
 %% ---------------------------------------------------------------------------
 %% Chapter 2 -- Background: RHOAI & Workbenches

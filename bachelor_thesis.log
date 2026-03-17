@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023) (preloaded format=pdflatex 2026.2.24)  15 MAR 2026 13:18
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023) (preloaded format=pdflatex 2026.2.24)  17 MAR 2026 22:44
 entering extended mode
  \write18 enabled.
  %&-line parsing enabled.
@@ -1651,7 +1651,7 @@ Package hyperref Info: Link coloring OFF on input line 92.
 
 \@logowidth=\skip104
 \@logoheight=\skip105
-<fithesis/logo/mu/fithesis-base-english.pdf, id=145, 202.7575pt x 52.195pt>
+<fithesis/logo/mu/fithesis-base-english.pdf, id=149, 202.7575pt x 52.195pt>
 File: fithesis/logo/mu/fithesis-base-english.pdf Graphic file (type pdf)
 <use fithesis/logo/mu/fithesis-base-english.pdf>
 Package pdftex.def Info: fithesis/logo/mu/fithesis-base-english.pdf  used on in
@@ -1696,7 +1696,7 @@ st/fonts/enc/dvips/tex-gyre/q-ec.enc} <./fithesis/logo/mu/fithesis-base-english
 .pdf>]
 \@logowidth=\skip106
 \@logoheight=\skip107
-<fithesis/logo/mu/fithesis-base-english-color.pdf, id=154, 202.7575pt x 52.195p
+<fithesis/logo/mu/fithesis-base-english-color.pdf, id=158, 202.7575pt x 52.195p
 t>
 File: fithesis/logo/mu/fithesis-base-english-color.pdf Graphic file (type pdf)
 <use fithesis/logo/mu/fithesis-base-english-color.pdf>
@@ -1716,7 +1716,7 @@ Package pdftex.def Info: fithesis/logo/mu/fithesis-base-english-color.pdf  used
  [1 <./fithesis/logo/mu/fithesis-base-english-color.pdf>]
 \@logowidth=\skip108
 \@logoheight=\skip109
-<fithesis/logo/mu/fithesis-fi-english-color.pdf, id=160, 75.28125pt x 51.19125p
+<fithesis/logo/mu/fithesis-fi-english-color.pdf, id=164, 75.28125pt x 51.19125p
 t>
 File: fithesis/logo/mu/fithesis-fi-english-color.pdf Graphic file (type pdf)
 <use fithesis/logo/mu/fithesis-fi-english-color.pdf>
@@ -1841,7 +1841,18 @@ rotocol
  []
 
 [5{/usr/share/texlive/texmf-dist/fonts/enc/dvips/base/8r.enc}]
-(/usr/share/texlive/texmf-dist/tex/latex/listings/lstlang1.sty
+Overfull \hbox (22.91663pt too wide) has occurred while \output is active
+ \T1/qpl/m/sc/12 2. Background: Artificial Intelligence and the Model Context P
+rotocol
+ []
+
+[6]
+Overfull \hbox (22.91663pt too wide) has occurred while \output is active
+ \T1/qpl/m/sc/12 2. Background: Artificial Intelligence and the Model Context P
+rotocol
+ []
+
+[7] (/usr/share/texlive/texmf-dist/tex/latex/listings/lstlang1.sty
 File: lstlang1.sty 2023/02/27 1.9 listings language file
 )
 (/usr/share/texlive/texmf-dist/tex/latex/listings/lstlang2.sty
@@ -1851,7 +1862,7 @@ File: lstlang2.sty 2023/02/27 1.9 listings language file
 File: lstlang3.sty 2023/02/27 1.9 listings language file
 )
 LaTeX Font Info:    Trying to load font information for T1+lmtt on input line 3
-00.
+76.
 
 (/usr/share/texlive/texmf-dist/tex/latex/lm/t1lmtt.fd
 File: t1lmtt.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
@@ -1861,55 +1872,52 @@ Package microtype Info: Loading generic protrusion settings for font family
 (microtype)             For optimal results, create family-specific settings.
 (microtype)             See the microtype manual for details.
 
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
-
 Overfull \hbox (22.91663pt too wide) has occurred while \output is active
  \T1/qpl/m/sc/12 2. Background: Artificial Intelligence and the Model Context P
 rotocol
  []
 
-[6{/usr/share/texlive/texmf-dist/fonts/enc/dvips/lm/lm-ec.enc}]
-Overfull \hbox (22.91663pt too wide) has occurred while \output is active
- \T1/qpl/m/sc/12 2. Background: Artificial Intelligence and the Model Context P
-rotocol
- []
-
-[7]
+[8{/usr/share/texlive/texmf-dist/fonts/enc/dvips/lm/lm-ec.enc}]
 Chapter 3.
 
-Overfull \hbox (3.44109pt too wide) in paragraph at lines 354--354
+Overfull \hbox (3.44109pt too wide) in paragraph at lines 394--394
 []\T1/qpl/b/n/17.28 (-20) 3  Back-ground: Red Hat Open-Shift AI and Work-
  []
 
-[8]
-Chapter 4.
 [9]
-Chapter 5.
+Chapter 4.
 [10]
-Chapter 6.
+Chapter 5.
 [11]
-Overfull \hbox (5.47418pt too wide) in paragraph at lines 436--436
-\T1/qpl/m/it/12 (-20) Pro-to-col\T1/qpl/m/n/12 (-20) . 2025. \T1/qpl/m/sc/12 (-
-20) url\T1/qpl/m/n/12 (-20) : []$\T1/lmtt/m/n/12 https : / / github . com / mod
-elcontextprotocol /
+Chapter 6.
+[12]
+Overfull \hbox (18.6004pt too wide) in paragraph at lines 476--476
+[]\T1/qpl/m/n/12 (-20) Patrick Lewis et al. ^^P  Retrieval-Augmented Gen-er-a-t
+ion for Knowledge-
  []
 
-[12] (./bachelor_thesis.aux)
+
+Overfull \hbox (63.32559pt too wide) in paragraph at lines 476--476
+\T1/qpl/m/it/12 (-20) GitHub Or-gan-i-sa-tion\T1/qpl/m/n/12 (-20) . 2024. \T1/q
+pl/m/sc/12 (-20) url\T1/qpl/m/n/12 (-20) : []$\T1/lmtt/m/n/12 https : / / githu
+b . com / modelcontextprotocol$[]
+ []
+
+[13] (./bachelor_thesis.aux)
 Package rerunfilecheck Info: File `bachelor_thesis.out' has not changed.
-(rerunfilecheck)             Checksum: 228AB727BCC3486743F06EA0AA2C1493;2454.
+(rerunfilecheck)             Checksum: 70E0113E7D723BCAA6FDDB65493BAE4B;2499.
 Package logreq Info: Writing requests to 'bachelor_thesis.run.xml'.
 \openout1 = `bachelor_thesis.run.xml'.
 
  ) 
 Here is how much of TeX's memory you used:
- 41949 strings out of 476041
- 810847 string characters out of 5793174
- 1865388 words of memory out of 6000000
- 61413 multiletter control sequences out of 15000+600000
- 577555 words of font info for 156 fonts, out of 8000000 for 9000
+ 41959 strings out of 476041
+ 810998 string characters out of 5793174
+ 1864388 words of memory out of 6000000
+ 61415 multiletter control sequences out of 15000+600000
+ 577943 words of font info for 159 fonts, out of 8000000 for 9000
  1139 hyphenation exceptions out of 8191
- 98i,8n,96p,1160b,2390s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 98i,7n,96p,1160b,2337s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr
 /share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share
 /texlive/texmf-dist/fonts/type1/public/lm/lmtt12.pfb></usr/share/texlive/texmf-
@@ -1918,10 +1926,10 @@ type1/public/tex-gyre/qhvr.pfb></usr/share/texlive/texmf-dist/fonts/type1/publi
 c/tex-gyre/qplb.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/tex-gyre/
 qplr.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/tex-gyre/qplri.pfb><
 /usr/share/texlive/texmf-dist/fonts/type1/urw/palatino/uplri8a.pfb>
-Output written on bachelor_thesis.pdf (21 pages, 310005 bytes).
+Output written on bachelor_thesis.pdf (22 pages, 312171 bytes).
 PDF statistics:
- 393 PDF objects out of 1000 (max. 8388607)
- 345 compressed objects within 4 object streams
- 73 named destinations out of 1000 (max. 500000)
- 32580 words of extra memory for PDF output out of 35830 (max. 10000000)
+ 407 PDF objects out of 1000 (max. 8388607)
+ 358 compressed objects within 4 object streams
+ 75 named destinations out of 1000 (max. 500000)
+ 32588 words of extra memory for PDF output out of 35830 (max. 10000000)
 
