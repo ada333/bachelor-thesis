@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023) (preloaded format=pdflatex 2026.2.24)  17 MAR 2026 22:44
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023) (preloaded format=pdflatex 2026.2.24)  22 MAR 2026 23:29
 entering extended mode
  \write18 enabled.
  %&-line parsing enabled.
@@ -1862,7 +1862,7 @@ File: lstlang2.sty 2023/02/27 1.9 listings language file
 File: lstlang3.sty 2023/02/27 1.9 listings language file
 )
 LaTeX Font Info:    Trying to load font information for T1+lmtt on input line 3
-76.
+71.
 
 (/usr/share/texlive/texmf-dist/tex/latex/lm/t1lmtt.fd
 File: t1lmtt.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
@@ -1880,7 +1880,7 @@ rotocol
 [8{/usr/share/texlive/texmf-dist/fonts/enc/dvips/lm/lm-ec.enc}]
 Chapter 3.
 
-Overfull \hbox (3.44109pt too wide) in paragraph at lines 394--394
+Overfull \hbox (3.44109pt too wide) in paragraph at lines 387--387
 []\T1/qpl/b/n/17.28 (-20) 3  Back-ground: Red Hat Open-Shift AI and Work-
  []
 
@@ -1905,19 +1905,19 @@ b . com / modelcontextprotocol$[]
 
 [13] (./bachelor_thesis.aux)
 Package rerunfilecheck Info: File `bachelor_thesis.out' has not changed.
-(rerunfilecheck)             Checksum: 70E0113E7D723BCAA6FDDB65493BAE4B;2499.
+(rerunfilecheck)             Checksum: 599A2ECB7B563FB61D6CE099C3C20C83;2550.
 Package logreq Info: Writing requests to 'bachelor_thesis.run.xml'.
 \openout1 = `bachelor_thesis.run.xml'.
 
  ) 
 Here is how much of TeX's memory you used:
  41959 strings out of 476041
- 810998 string characters out of 5793174
+ 811008 string characters out of 5793174
  1864388 words of memory out of 6000000
  61415 multiletter control sequences out of 15000+600000
  577943 words of font info for 159 fonts, out of 8000000 for 9000
  1139 hyphenation exceptions out of 8191
- 98i,7n,96p,1160b,2337s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 98i,8n,96p,1160b,2337s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr
 /share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share
 /texlive/texmf-dist/fonts/type1/public/lm/lmtt12.pfb></usr/share/texlive/texmf-
@@ -1926,7 +1926,7 @@ type1/public/tex-gyre/qhvr.pfb></usr/share/texlive/texmf-dist/fonts/type1/publi
 c/tex-gyre/qplb.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/tex-gyre/
 qplr.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/tex-gyre/qplri.pfb><
 /usr/share/texlive/texmf-dist/fonts/type1/urw/palatino/uplri8a.pfb>
-Output written on bachelor_thesis.pdf (22 pages, 312171 bytes).
+Output written on bachelor_thesis.pdf (22 pages, 312909 bytes).
 PDF statistics:
  407 PDF objects out of 1000 (max. 8388607)
  358 compressed objects within 4 object streams

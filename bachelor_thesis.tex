@@ -387,14 +387,21 @@ deployments~\parencite{mcp-spec}.
 \chapter{Background: Red Hat OpenShift AI and Workbenches}
 \label{chap:rhoai}
 
+This chapter describes the fundamental concepts of Red Hat OpenShift AI and workbenches.
+These concepts are the foundation for the MCP server implementation and architecture
+choices. The chapters follow the layered architecture from bottom to
+top: first OpenShift (based on Kubernetes) as the infrastructure layer, then Red Hat
+OpenShift AI (based on Kubeflow) as the machine-learning platform, and finally workbenches (based on Kubeflow notebooks) as the user-facing
+JupyterLab environments.
+
 \section{Kubernetes and OpenShift}
 \label{sec:kubernetes}
 
-\section{Red Hat OpenShift AI}
+\section{Kubeflow and Red Hat OpenShift AI}
 \label{sec:rhoai}
 
-\section{Workbenches}
-\label{sec:workbenches}
+\section{Kubeflow Notebooks and Workbenches}
+\label{sec:notebooks-workbenches}
 
 \section{MCP Tooling in RHOAI}
 \label{sec:mcp-in-rhoai}

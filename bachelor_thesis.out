@@ -10,8 +10,8 @@
 \BOOKMARK [2][-]{subsection.2.3.5}{Transport\040Mechanisms}{section.2.3}% 10
 \BOOKMARK [0][-]{chapter.3}{Background:\040Red\040Hat\040OpenShift\040AI\040and\040Workbenches}{}% 11
 \BOOKMARK [1][-]{section.3.1}{Kubernetes\040and\040OpenShift}{chapter.3}% 12
-\BOOKMARK [1][-]{section.3.2}{Red\040Hat\040OpenShift\040AI}{chapter.3}% 13
-\BOOKMARK [1][-]{section.3.3}{Workbenches}{chapter.3}% 14
+\BOOKMARK [1][-]{section.3.2}{Kubeflow\040and\040Red\040Hat\040OpenShift\040AI}{chapter.3}% 13
+\BOOKMARK [1][-]{section.3.3}{Kubeflow\040Notebooks\040and\040Workbenches}{chapter.3}% 14
 \BOOKMARK [1][-]{section.3.4}{MCP\040Tooling\040in\040RHOAI}{chapter.3}% 15
 \BOOKMARK [0][-]{chapter.4}{Analysis\040and\040Design}{}% 16
 \BOOKMARK [1][-]{section.4.1}{Motivation\040and\040Goals}{chapter.4}% 17
