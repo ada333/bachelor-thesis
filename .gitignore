@@ -1,0 +1,27 @@
+# LaTeX build artifacts
+*.aux
+*.bbl
+*.bcf
+*.blg
+*-blx.bib
+*.fdb_latexmk
+*.fls
+*.idx
+*.ilg
+*.ind
+*.lof
+*.log
+*.lot
+*.out
+*.run.xml
+*.toc
+*.synctex.gz
+
+# Markdown intermediates
+*.markdown.in
+*.markdown.lua
+_markdown_*/
+
+# Example/template files
+fi-pdflatex.*
+fi-lualatex.*
