@@ -122,6 +122,74 @@
       \verb https://www.jsonrpc.org/specification
       \endverb
     \endentry
+    \entry{kubeflow-docs}{online}{}{}
+      \name{author}{1}{}{%
+        {{hash=0650fa738f86d9b49e460bd5ade2ec84}{%
+           family={{Kubeflow Contributors}},
+           familyi={K\bibinitperiod}}}%
+      }
+      \strng{namehash}{0650fa738f86d9b49e460bd5ade2ec84}
+      \strng{fullhash}{0650fa738f86d9b49e460bd5ade2ec84}
+      \strng{fullhashraw}{0650fa738f86d9b49e460bd5ade2ec84}
+      \strng{bibnamehash}{0650fa738f86d9b49e460bd5ade2ec84}
+      \strng{authorbibnamehash}{0650fa738f86d9b49e460bd5ade2ec84}
+      \strng{authornamehash}{0650fa738f86d9b49e460bd5ade2ec84}
+      \strng{authorfullhash}{0650fa738f86d9b49e460bd5ade2ec84}
+      \strng{authorfullhashraw}{0650fa738f86d9b49e460bd5ade2ec84}
+      \field{extraname}{1}
+      \field{sortinit}{K}
+      \field{sortinithash}{c02bf6bff1c488450c352b40f5d853ab}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{langid}{english}
+      \field{title}{Kubeflow Documentation}
+      \field{urlday}{22}
+      \field{urlmonth}{3}
+      \field{urlyear}{2026}
+      \field{year}{2024}
+      \field{dateera}{ce}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb https://www.kubeflow.org/docs/
+      \endverb
+      \verb{url}
+      \verb https://www.kubeflow.org/docs/
+      \endverb
+    \endentry
+    \entry{kubeflow-notebook-crd}{online}{}{}
+      \name{author}{1}{}{%
+        {{hash=0650fa738f86d9b49e460bd5ade2ec84}{%
+           family={{Kubeflow Contributors}},
+           familyi={K\bibinitperiod}}}%
+      }
+      \strng{namehash}{0650fa738f86d9b49e460bd5ade2ec84}
+      \strng{fullhash}{0650fa738f86d9b49e460bd5ade2ec84}
+      \strng{fullhashraw}{0650fa738f86d9b49e460bd5ade2ec84}
+      \strng{bibnamehash}{0650fa738f86d9b49e460bd5ade2ec84}
+      \strng{authorbibnamehash}{0650fa738f86d9b49e460bd5ade2ec84}
+      \strng{authornamehash}{0650fa738f86d9b49e460bd5ade2ec84}
+      \strng{authorfullhash}{0650fa738f86d9b49e460bd5ade2ec84}
+      \strng{authorfullhashraw}{0650fa738f86d9b49e460bd5ade2ec84}
+      \field{extraname}{2}
+      \field{sortinit}{K}
+      \field{sortinithash}{c02bf6bff1c488450c352b40f5d853ab}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{langid}{english}
+      \field{title}{Notebook CRD --- Kubeflow GitHub Repository}
+      \field{urlday}{22}
+      \field{urlmonth}{3}
+      \field{urlyear}{2026}
+      \field{year}{2024}
+      \field{dateera}{ce}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb https://github.com/kubeflow/kubeflow/blob/master/components/notebook-controller/config/crd/bases/kubeflow.org_notebooks.yaml
+      \endverb
+      \verb{url}
+      \verb https://github.com/kubeflow/kubeflow/blob/master/components/notebook-controller/config/crd/bases/kubeflow.org_notebooks.yaml
+      \endverb
+    \endentry
     \entry{lewis2020rag}{inproceedings}{}{}
       \name{author}{12}{}{%
         {{hash=ecbe786a5668bf643d74bb24fe1c3cfe}{%
@@ -245,6 +313,39 @@
       \verb https://github.com/modelcontextprotocol
       \endverb
     \endentry
+    \entry{odh-docs}{online}{}{}
+      \name{author}{1}{}{%
+        {{hash=600ddcd8c1a97fc73bf4513ccdb15105}{%
+           family={{Open Data Hub Contributors}},
+           familyi={O\bibinitperiod}}}%
+      }
+      \strng{namehash}{600ddcd8c1a97fc73bf4513ccdb15105}
+      \strng{fullhash}{600ddcd8c1a97fc73bf4513ccdb15105}
+      \strng{fullhashraw}{600ddcd8c1a97fc73bf4513ccdb15105}
+      \strng{bibnamehash}{600ddcd8c1a97fc73bf4513ccdb15105}
+      \strng{authorbibnamehash}{600ddcd8c1a97fc73bf4513ccdb15105}
+      \strng{authornamehash}{600ddcd8c1a97fc73bf4513ccdb15105}
+      \strng{authorfullhash}{600ddcd8c1a97fc73bf4513ccdb15105}
+      \strng{authorfullhashraw}{600ddcd8c1a97fc73bf4513ccdb15105}
+      \field{sortinit}{O}
+      \field{sortinithash}{2cd7140a07aea5341f9e2771efe90aae}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{langid}{english}
+      \field{title}{Open Data Hub Documentation}
+      \field{urlday}{22}
+      \field{urlmonth}{3}
+      \field{urlyear}{2026}
+      \field{year}{2024}
+      \field{dateera}{ce}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb https://opendatahub.io/docs/
+      \endverb
+      \verb{url}
+      \verb https://opendatahub.io/docs/
+      \endverb
+    \endentry
     \entry{ouyang2022rlhf}{article}{}{}
       \true{moreauthor}
       \true{morelabelname}
@@ -358,6 +459,516 @@
       \endverb
       \verb{url}
       \verb https://www.promptfoo.dev
+      \endverb
+    \endentry
+    \entry{openshift-routes}{online}{}{}
+      \name{author}{1}{}{%
+        {{hash=a82007c47b25723539a00ff94e8b3d27}{%
+           family={{Red Hat}},
+           familyi={R\bibinitperiod}}}%
+      }
+      \strng{namehash}{a82007c47b25723539a00ff94e8b3d27}
+      \strng{fullhash}{a82007c47b25723539a00ff94e8b3d27}
+      \strng{fullhashraw}{a82007c47b25723539a00ff94e8b3d27}
+      \strng{bibnamehash}{a82007c47b25723539a00ff94e8b3d27}
+      \strng{authorbibnamehash}{a82007c47b25723539a00ff94e8b3d27}
+      \strng{authornamehash}{a82007c47b25723539a00ff94e8b3d27}
+      \strng{authorfullhash}{a82007c47b25723539a00ff94e8b3d27}
+      \strng{authorfullhashraw}{a82007c47b25723539a00ff94e8b3d27}
+      \field{extraname}{1}
+      \field{sortinit}{R}
+      \field{sortinithash}{5e1c39a9d46ffb6bebd8f801023a9486}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{langid}{english}
+      \field{title}{Configuring Routes --- OpenShift Container Platform Documentation}
+      \field{urlday}{22}
+      \field{urlmonth}{3}
+      \field{urlyear}{2026}
+      \field{year}{2024}
+      \field{dateera}{ce}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb https://docs.openshift.com/container-platform/latest/networking/routes/route-configuration.html
+      \endverb
+      \verb{url}
+      \verb https://docs.openshift.com/container-platform/latest/networking/routes/route-configuration.html
+      \endverb
+    \endentry
+    \entry{openshift-imagestreams}{online}{}{}
+      \name{author}{1}{}{%
+        {{hash=a82007c47b25723539a00ff94e8b3d27}{%
+           family={{Red Hat}},
+           familyi={R\bibinitperiod}}}%
+      }
+      \strng{namehash}{a82007c47b25723539a00ff94e8b3d27}
+      \strng{fullhash}{a82007c47b25723539a00ff94e8b3d27}
+      \strng{fullhashraw}{a82007c47b25723539a00ff94e8b3d27}
+      \strng{bibnamehash}{a82007c47b25723539a00ff94e8b3d27}
+      \strng{authorbibnamehash}{a82007c47b25723539a00ff94e8b3d27}
+      \strng{authornamehash}{a82007c47b25723539a00ff94e8b3d27}
+      \strng{authorfullhash}{a82007c47b25723539a00ff94e8b3d27}
+      \strng{authorfullhashraw}{a82007c47b25723539a00ff94e8b3d27}
+      \field{extraname}{2}
+      \field{sortinit}{R}
+      \field{sortinithash}{5e1c39a9d46ffb6bebd8f801023a9486}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{langid}{english}
+      \field{title}{Managing Image Streams --- OpenShift Container Platform Documentation}
+      \field{urlday}{22}
+      \field{urlmonth}{3}
+      \field{urlyear}{2026}
+      \field{year}{2024}
+      \field{dateera}{ce}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb https://docs.openshift.com/container-platform/latest/openshift_images/image-streams-manage.html
+      \endverb
+      \verb{url}
+      \verb https://docs.openshift.com/container-platform/latest/openshift_images/image-streams-manage.html
+      \endverb
+    \endentry
+    \entry{openshift-docs}{online}{}{}
+      \name{author}{1}{}{%
+        {{hash=a82007c47b25723539a00ff94e8b3d27}{%
+           family={{Red Hat}},
+           familyi={R\bibinitperiod}}}%
+      }
+      \strng{namehash}{a82007c47b25723539a00ff94e8b3d27}
+      \strng{fullhash}{a82007c47b25723539a00ff94e8b3d27}
+      \strng{fullhashraw}{a82007c47b25723539a00ff94e8b3d27}
+      \strng{bibnamehash}{a82007c47b25723539a00ff94e8b3d27}
+      \strng{authorbibnamehash}{a82007c47b25723539a00ff94e8b3d27}
+      \strng{authornamehash}{a82007c47b25723539a00ff94e8b3d27}
+      \strng{authorfullhash}{a82007c47b25723539a00ff94e8b3d27}
+      \strng{authorfullhashraw}{a82007c47b25723539a00ff94e8b3d27}
+      \field{extraname}{3}
+      \field{sortinit}{R}
+      \field{sortinithash}{5e1c39a9d46ffb6bebd8f801023a9486}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{langid}{english}
+      \field{title}{OpenShift Container Platform Documentation}
+      \field{urlday}{22}
+      \field{urlmonth}{3}
+      \field{urlyear}{2026}
+      \field{year}{2024}
+      \field{dateera}{ce}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb https://docs.openshift.com/container-platform/latest/welcome/index.html
+      \endverb
+      \verb{url}
+      \verb https://docs.openshift.com/container-platform/latest/welcome/index.html
+      \endverb
+    \endentry
+    \entry{rhoai-docs}{online}{}{}
+      \name{author}{1}{}{%
+        {{hash=a82007c47b25723539a00ff94e8b3d27}{%
+           family={{Red Hat}},
+           familyi={R\bibinitperiod}}}%
+      }
+      \strng{namehash}{a82007c47b25723539a00ff94e8b3d27}
+      \strng{fullhash}{a82007c47b25723539a00ff94e8b3d27}
+      \strng{fullhashraw}{a82007c47b25723539a00ff94e8b3d27}
+      \strng{bibnamehash}{a82007c47b25723539a00ff94e8b3d27}
+      \strng{authorbibnamehash}{a82007c47b25723539a00ff94e8b3d27}
+      \strng{authornamehash}{a82007c47b25723539a00ff94e8b3d27}
+      \strng{authorfullhash}{a82007c47b25723539a00ff94e8b3d27}
+      \strng{authorfullhashraw}{a82007c47b25723539a00ff94e8b3d27}
+      \field{extraname}{4}
+      \field{sortinit}{R}
+      \field{sortinithash}{5e1c39a9d46ffb6bebd8f801023a9486}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{langid}{english}
+      \field{title}{Red Hat OpenShift AI Documentation}
+      \field{urlday}{22}
+      \field{urlmonth}{3}
+      \field{urlyear}{2026}
+      \field{year}{2024}
+      \field{dateera}{ce}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb https://docs.redhat.com/en/documentation/red_hat_openshift_ai_self-managed/
+      \endverb
+      \verb{url}
+      \verb https://docs.redhat.com/en/documentation/red_hat_openshift_ai_self-managed/
+      \endverb
+    \endentry
+    \entry{openshift-oauth}{online}{}{}
+      \name{author}{1}{}{%
+        {{hash=a82007c47b25723539a00ff94e8b3d27}{%
+           family={{Red Hat}},
+           familyi={R\bibinitperiod}}}%
+      }
+      \strng{namehash}{a82007c47b25723539a00ff94e8b3d27}
+      \strng{fullhash}{a82007c47b25723539a00ff94e8b3d27}
+      \strng{fullhashraw}{a82007c47b25723539a00ff94e8b3d27}
+      \strng{bibnamehash}{a82007c47b25723539a00ff94e8b3d27}
+      \strng{authorbibnamehash}{a82007c47b25723539a00ff94e8b3d27}
+      \strng{authornamehash}{a82007c47b25723539a00ff94e8b3d27}
+      \strng{authorfullhash}{a82007c47b25723539a00ff94e8b3d27}
+      \strng{authorfullhashraw}{a82007c47b25723539a00ff94e8b3d27}
+      \field{extraname}{5}
+      \field{sortinit}{R}
+      \field{sortinithash}{5e1c39a9d46ffb6bebd8f801023a9486}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{langid}{english}
+      \field{title}{Understanding Authentication --- OpenShift Container Platform Documentation}
+      \field{urlday}{22}
+      \field{urlmonth}{3}
+      \field{urlyear}{2026}
+      \field{year}{2024}
+      \field{dateera}{ce}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb https://docs.openshift.com/container-platform/latest/authentication/understanding-authentication.html
+      \endverb
+      \verb{url}
+      \verb https://docs.openshift.com/container-platform/latest/authentication/understanding-authentication.html
+      \endverb
+    \endentry
+    \entry{openshift-operators}{online}{}{}
+      \name{author}{1}{}{%
+        {{hash=a82007c47b25723539a00ff94e8b3d27}{%
+           family={{Red Hat}},
+           familyi={R\bibinitperiod}}}%
+      }
+      \strng{namehash}{a82007c47b25723539a00ff94e8b3d27}
+      \strng{fullhash}{a82007c47b25723539a00ff94e8b3d27}
+      \strng{fullhashraw}{a82007c47b25723539a00ff94e8b3d27}
+      \strng{bibnamehash}{a82007c47b25723539a00ff94e8b3d27}
+      \strng{authorbibnamehash}{a82007c47b25723539a00ff94e8b3d27}
+      \strng{authornamehash}{a82007c47b25723539a00ff94e8b3d27}
+      \strng{authorfullhash}{a82007c47b25723539a00ff94e8b3d27}
+      \strng{authorfullhashraw}{a82007c47b25723539a00ff94e8b3d27}
+      \field{extraname}{6}
+      \field{sortinit}{R}
+      \field{sortinithash}{5e1c39a9d46ffb6bebd8f801023a9486}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{langid}{english}
+      \field{title}{Understanding Operators --- OpenShift Container Platform Documentation}
+      \field{urlday}{22}
+      \field{urlmonth}{3}
+      \field{urlyear}{2026}
+      \field{year}{2024}
+      \field{dateera}{ce}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb https://docs.openshift.com/container-platform/latest/operators/understanding/olm-what-operators-are.html
+      \endverb
+      \verb{url}
+      \verb https://docs.openshift.com/container-platform/latest/operators/understanding/olm-what-operators-are.html
+      \endverb
+    \endentry
+    \entry{openshift-projects}{online}{}{}
+      \name{author}{1}{}{%
+        {{hash=a82007c47b25723539a00ff94e8b3d27}{%
+           family={{Red Hat}},
+           familyi={R\bibinitperiod}}}%
+      }
+      \strng{namehash}{a82007c47b25723539a00ff94e8b3d27}
+      \strng{fullhash}{a82007c47b25723539a00ff94e8b3d27}
+      \strng{fullhashraw}{a82007c47b25723539a00ff94e8b3d27}
+      \strng{bibnamehash}{a82007c47b25723539a00ff94e8b3d27}
+      \strng{authorbibnamehash}{a82007c47b25723539a00ff94e8b3d27}
+      \strng{authornamehash}{a82007c47b25723539a00ff94e8b3d27}
+      \strng{authorfullhash}{a82007c47b25723539a00ff94e8b3d27}
+      \strng{authorfullhashraw}{a82007c47b25723539a00ff94e8b3d27}
+      \field{extraname}{7}
+      \field{sortinit}{R}
+      \field{sortinithash}{5e1c39a9d46ffb6bebd8f801023a9486}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{langid}{english}
+      \field{title}{Working with Projects --- OpenShift Container Platform Documentation}
+      \field{urlday}{22}
+      \field{urlmonth}{3}
+      \field{urlyear}{2026}
+      \field{year}{2024}
+      \field{dateera}{ce}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb https://docs.openshift.com/container-platform/latest/applications/projects/working-with-projects.html
+      \endverb
+      \verb{url}
+      \verb https://docs.openshift.com/container-platform/latest/applications/projects/working-with-projects.html
+      \endverb
+    \endentry
+    \entry{rhoai-workbenches}{online}{}{}
+      \name{author}{1}{}{%
+        {{hash=a82007c47b25723539a00ff94e8b3d27}{%
+           family={{Red Hat}},
+           familyi={R\bibinitperiod}}}%
+      }
+      \strng{namehash}{a82007c47b25723539a00ff94e8b3d27}
+      \strng{fullhash}{a82007c47b25723539a00ff94e8b3d27}
+      \strng{fullhashraw}{a82007c47b25723539a00ff94e8b3d27}
+      \strng{bibnamehash}{a82007c47b25723539a00ff94e8b3d27}
+      \strng{authorbibnamehash}{a82007c47b25723539a00ff94e8b3d27}
+      \strng{authornamehash}{a82007c47b25723539a00ff94e8b3d27}
+      \strng{authorfullhash}{a82007c47b25723539a00ff94e8b3d27}
+      \strng{authorfullhashraw}{a82007c47b25723539a00ff94e8b3d27}
+      \field{extraname}{8}
+      \field{sortinit}{R}
+      \field{sortinithash}{5e1c39a9d46ffb6bebd8f801023a9486}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{langid}{english}
+      \field{title}{Working with Workbenches --- Red Hat OpenShift AI Documentation}
+      \field{urlday}{22}
+      \field{urlmonth}{3}
+      \field{urlyear}{2026}
+      \field{year}{2024}
+      \field{dateera}{ce}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb https://docs.redhat.com/en/documentation/red_hat_openshift_ai_self-managed/2-latest/html/working_on_data_science_projects/using-project-workbenches_workbenches
+      \endverb
+      \verb{url}
+      \verb https://docs.redhat.com/en/documentation/red_hat_openshift_ai_self-managed/2-latest/html/working_on_data_science_projects/using-project-workbenches_workbenches
+      \endverb
+    \endentry
+    \entry{kubernetes-crd}{online}{}{}
+      \name{author}{1}{}{%
+        {{hash=aa383893d75216c822915104dee00710}{%
+           family={{The Kubernetes Authors}},
+           familyi={T\bibinitperiod}}}%
+      }
+      \strng{namehash}{aa383893d75216c822915104dee00710}
+      \strng{fullhash}{aa383893d75216c822915104dee00710}
+      \strng{fullhashraw}{aa383893d75216c822915104dee00710}
+      \strng{bibnamehash}{aa383893d75216c822915104dee00710}
+      \strng{authorbibnamehash}{aa383893d75216c822915104dee00710}
+      \strng{authornamehash}{aa383893d75216c822915104dee00710}
+      \strng{authorfullhash}{aa383893d75216c822915104dee00710}
+      \strng{authorfullhashraw}{aa383893d75216c822915104dee00710}
+      \field{extraname}{1}
+      \field{sortinit}{T}
+      \field{sortinithash}{9af77f0292593c26bde9a56e688eaee9}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{langid}{english}
+      \field{title}{Custom Resources --- Kubernetes Documentation}
+      \field{urlday}{22}
+      \field{urlmonth}{3}
+      \field{urlyear}{2026}
+      \field{year}{2024}
+      \field{dateera}{ce}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/
+      \endverb
+      \verb{url}
+      \verb https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/
+      \endverb
+    \endentry
+    \entry{kubernetes-docs}{online}{}{}
+      \name{author}{1}{}{%
+        {{hash=aa383893d75216c822915104dee00710}{%
+           family={{The Kubernetes Authors}},
+           familyi={T\bibinitperiod}}}%
+      }
+      \strng{namehash}{aa383893d75216c822915104dee00710}
+      \strng{fullhash}{aa383893d75216c822915104dee00710}
+      \strng{fullhashraw}{aa383893d75216c822915104dee00710}
+      \strng{bibnamehash}{aa383893d75216c822915104dee00710}
+      \strng{authorbibnamehash}{aa383893d75216c822915104dee00710}
+      \strng{authornamehash}{aa383893d75216c822915104dee00710}
+      \strng{authorfullhash}{aa383893d75216c822915104dee00710}
+      \strng{authorfullhashraw}{aa383893d75216c822915104dee00710}
+      \field{extraname}{2}
+      \field{sortinit}{T}
+      \field{sortinithash}{9af77f0292593c26bde9a56e688eaee9}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{langid}{english}
+      \field{title}{Kubernetes Documentation}
+      \field{urlday}{22}
+      \field{urlmonth}{3}
+      \field{urlyear}{2026}
+      \field{year}{2024}
+      \field{dateera}{ce}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb https://kubernetes.io/docs/home/
+      \endverb
+      \verb{url}
+      \verb https://kubernetes.io/docs/home/
+      \endverb
+    \endentry
+    \entry{kubernetes-labels}{online}{}{}
+      \name{author}{1}{}{%
+        {{hash=aa383893d75216c822915104dee00710}{%
+           family={{The Kubernetes Authors}},
+           familyi={T\bibinitperiod}}}%
+      }
+      \strng{namehash}{aa383893d75216c822915104dee00710}
+      \strng{fullhash}{aa383893d75216c822915104dee00710}
+      \strng{fullhashraw}{aa383893d75216c822915104dee00710}
+      \strng{bibnamehash}{aa383893d75216c822915104dee00710}
+      \strng{authorbibnamehash}{aa383893d75216c822915104dee00710}
+      \strng{authornamehash}{aa383893d75216c822915104dee00710}
+      \strng{authorfullhash}{aa383893d75216c822915104dee00710}
+      \strng{authorfullhashraw}{aa383893d75216c822915104dee00710}
+      \field{extraname}{3}
+      \field{sortinit}{T}
+      \field{sortinithash}{9af77f0292593c26bde9a56e688eaee9}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{langid}{english}
+      \field{title}{Labels and Selectors --- Kubernetes Documentation}
+      \field{urlday}{22}
+      \field{urlmonth}{3}
+      \field{urlyear}{2026}
+      \field{year}{2024}
+      \field{dateera}{ce}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+      \endverb
+      \verb{url}
+      \verb https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+      \endverb
+    \endentry
+    \entry{kubernetes-namespaces}{online}{}{}
+      \name{author}{1}{}{%
+        {{hash=aa383893d75216c822915104dee00710}{%
+           family={{The Kubernetes Authors}},
+           familyi={T\bibinitperiod}}}%
+      }
+      \strng{namehash}{aa383893d75216c822915104dee00710}
+      \strng{fullhash}{aa383893d75216c822915104dee00710}
+      \strng{fullhashraw}{aa383893d75216c822915104dee00710}
+      \strng{bibnamehash}{aa383893d75216c822915104dee00710}
+      \strng{authorbibnamehash}{aa383893d75216c822915104dee00710}
+      \strng{authornamehash}{aa383893d75216c822915104dee00710}
+      \strng{authorfullhash}{aa383893d75216c822915104dee00710}
+      \strng{authorfullhashraw}{aa383893d75216c822915104dee00710}
+      \field{extraname}{4}
+      \field{sortinit}{T}
+      \field{sortinithash}{9af77f0292593c26bde9a56e688eaee9}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{langid}{english}
+      \field{title}{Namespaces --- Kubernetes Documentation}
+      \field{urlday}{22}
+      \field{urlmonth}{3}
+      \field{urlyear}{2026}
+      \field{year}{2024}
+      \field{dateera}{ce}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/
+      \endverb
+      \verb{url}
+      \verb https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/
+      \endverb
+    \endentry
+    \entry{kubernetes-pv}{online}{}{}
+      \name{author}{1}{}{%
+        {{hash=aa383893d75216c822915104dee00710}{%
+           family={{The Kubernetes Authors}},
+           familyi={T\bibinitperiod}}}%
+      }
+      \strng{namehash}{aa383893d75216c822915104dee00710}
+      \strng{fullhash}{aa383893d75216c822915104dee00710}
+      \strng{fullhashraw}{aa383893d75216c822915104dee00710}
+      \strng{bibnamehash}{aa383893d75216c822915104dee00710}
+      \strng{authorbibnamehash}{aa383893d75216c822915104dee00710}
+      \strng{authornamehash}{aa383893d75216c822915104dee00710}
+      \strng{authorfullhash}{aa383893d75216c822915104dee00710}
+      \strng{authorfullhashraw}{aa383893d75216c822915104dee00710}
+      \field{extraname}{5}
+      \field{sortinit}{T}
+      \field{sortinithash}{9af77f0292593c26bde9a56e688eaee9}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{langid}{english}
+      \field{title}{Persistent Volumes --- Kubernetes Documentation}
+      \field{urlday}{22}
+      \field{urlmonth}{3}
+      \field{urlyear}{2026}
+      \field{year}{2024}
+      \field{dateera}{ce}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb https://kubernetes.io/docs/concepts/storage/persistent-volumes/
+      \endverb
+      \verb{url}
+      \verb https://kubernetes.io/docs/concepts/storage/persistent-volumes/
+      \endverb
+    \endentry
+    \entry{kubernetes-pods}{online}{}{}
+      \name{author}{1}{}{%
+        {{hash=aa383893d75216c822915104dee00710}{%
+           family={{The Kubernetes Authors}},
+           familyi={T\bibinitperiod}}}%
+      }
+      \strng{namehash}{aa383893d75216c822915104dee00710}
+      \strng{fullhash}{aa383893d75216c822915104dee00710}
+      \strng{fullhashraw}{aa383893d75216c822915104dee00710}
+      \strng{bibnamehash}{aa383893d75216c822915104dee00710}
+      \strng{authorbibnamehash}{aa383893d75216c822915104dee00710}
+      \strng{authornamehash}{aa383893d75216c822915104dee00710}
+      \strng{authorfullhash}{aa383893d75216c822915104dee00710}
+      \strng{authorfullhashraw}{aa383893d75216c822915104dee00710}
+      \field{extraname}{6}
+      \field{sortinit}{T}
+      \field{sortinithash}{9af77f0292593c26bde9a56e688eaee9}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{langid}{english}
+      \field{title}{Pods --- Kubernetes Documentation}
+      \field{urlday}{22}
+      \field{urlmonth}{3}
+      \field{urlyear}{2026}
+      \field{year}{2024}
+      \field{dateera}{ce}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb https://kubernetes.io/docs/concepts/workloads/pods/
+      \endverb
+      \verb{url}
+      \verb https://kubernetes.io/docs/concepts/workloads/pods/
+      \endverb
+    \endentry
+    \entry{kubernetes-statefulsets}{online}{}{}
+      \name{author}{1}{}{%
+        {{hash=aa383893d75216c822915104dee00710}{%
+           family={{The Kubernetes Authors}},
+           familyi={T\bibinitperiod}}}%
+      }
+      \strng{namehash}{aa383893d75216c822915104dee00710}
+      \strng{fullhash}{aa383893d75216c822915104dee00710}
+      \strng{fullhashraw}{aa383893d75216c822915104dee00710}
+      \strng{bibnamehash}{aa383893d75216c822915104dee00710}
+      \strng{authorbibnamehash}{aa383893d75216c822915104dee00710}
+      \strng{authornamehash}{aa383893d75216c822915104dee00710}
+      \strng{authorfullhash}{aa383893d75216c822915104dee00710}
+      \strng{authorfullhashraw}{aa383893d75216c822915104dee00710}
+      \field{extraname}{7}
+      \field{sortinit}{T}
+      \field{sortinithash}{9af77f0292593c26bde9a56e688eaee9}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{langid}{english}
+      \field{title}{StatefulSets --- Kubernetes Documentation}
+      \field{urlday}{22}
+      \field{urlmonth}{3}
+      \field{urlyear}{2026}
+      \field{year}{2024}
+      \field{dateera}{ce}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/
+      \endverb
+      \verb{url}
+      \verb https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/
       \endverb
     \endentry
     \entry{vaswani2017attention}{article}{}{}

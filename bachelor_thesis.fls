@@ -1697,6 +1697,12 @@ INPUT /usr/share/texlive/texmf-dist/tex/latex/lm/t1lmtt.fd
 INPUT /usr/share/texlive/texmf-dist/tex/latex/lm/t1lmtt.fd
 INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/lm/ec-lmtt12.tfm
 INPUT /usr/share/texlive/texmf-dist/fonts/enc/dvips/lm/lm-ec.enc
+INPUT /usr/share/texlive/texmf-dist/tex/latex/tex-gyre/ts1qpl.fd
+INPUT /usr/share/texlive/texmf-dist/tex/latex/tex-gyre/ts1qpl.fd
+INPUT /usr/share/texlive/texmf-dist/tex/latex/tex-gyre/ts1qpl.fd
+INPUT /usr/share/texlive/texmf-dist/tex/latex/tex-gyre/ts1qpl.fd
+INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/tex-gyre/ts1-qplr.tfm
+INPUT /usr/share/texlive/texmf-dist/fonts/enc/dvips/tex-gyre/q-ts1.enc
 INPUT bachelor_thesis.aux
 INPUT ./bachelor_thesis.out
 INPUT ./bachelor_thesis.out

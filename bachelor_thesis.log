@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023) (preloaded format=pdflatex 2026.2.24)  22 MAR 2026 23:29
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023) (preloaded format=pdflatex 2026.2.24)  24 MAR 2026 23:16
 entering extended mode
  \write18 enabled.
  %&-line parsing enabled.
@@ -1651,7 +1651,7 @@ Package hyperref Info: Link coloring OFF on input line 92.
 
 \@logowidth=\skip104
 \@logoheight=\skip105
-<fithesis/logo/mu/fithesis-base-english.pdf, id=149, 202.7575pt x 52.195pt>
+<fithesis/logo/mu/fithesis-base-english.pdf, id=189, 202.7575pt x 52.195pt>
 File: fithesis/logo/mu/fithesis-base-english.pdf Graphic file (type pdf)
 <use fithesis/logo/mu/fithesis-base-english.pdf>
 Package pdftex.def Info: fithesis/logo/mu/fithesis-base-english.pdf  used on in
@@ -1696,7 +1696,7 @@ st/fonts/enc/dvips/tex-gyre/q-ec.enc} <./fithesis/logo/mu/fithesis-base-english
 .pdf>]
 \@logowidth=\skip106
 \@logoheight=\skip107
-<fithesis/logo/mu/fithesis-base-english-color.pdf, id=158, 202.7575pt x 52.195p
+<fithesis/logo/mu/fithesis-base-english-color.pdf, id=198, 202.7575pt x 52.195p
 t>
 File: fithesis/logo/mu/fithesis-base-english-color.pdf Graphic file (type pdf)
 <use fithesis/logo/mu/fithesis-base-english-color.pdf>
@@ -1716,7 +1716,7 @@ Package pdftex.def Info: fithesis/logo/mu/fithesis-base-english-color.pdf  used
  [1 <./fithesis/logo/mu/fithesis-base-english-color.pdf>]
 \@logowidth=\skip108
 \@logoheight=\skip109
-<fithesis/logo/mu/fithesis-fi-english-color.pdf, id=164, 75.28125pt x 51.19125p
+<fithesis/logo/mu/fithesis-fi-english-color.pdf, id=204, 75.28125pt x 51.19125p
 t>
 File: fithesis/logo/mu/fithesis-fi-english-color.pdf Graphic file (type pdf)
 <use fithesis/logo/mu/fithesis-fi-english-color.pdf>
@@ -1884,40 +1884,115 @@ Overfull \hbox (3.44109pt too wide) in paragraph at lines 387--387
 []\T1/qpl/b/n/17.28 (-20) 3  Back-ground: Red Hat Open-Shift AI and Work-
  []
 
-[9]
+
+Underfull \vbox (badness 2990) has occurred while \output is active []
+
+ [9]
+[10] [11] [12] [13]
+Overfull \hbox (2.98784pt too wide) in paragraph at lines 607--613
+\T1/qpl/m/n/12 (-20) ping the note-book with-out delet-ing it. Re-mov-ing the a
+n-no-ta-tion restarts
+ []
+
+
+Underfull \vbox (badness 7963) has occurred while \output is active []
+
+ [14]
+LaTeX Font Info:    Trying to load font information for TS1+qpl on input line 6
+25.
+
+(/usr/share/texlive/texmf-dist/tex/latex/tex-gyre/ts1qpl.fd
+File: ts1qpl.fd 2009/09/25 v1.2 font definition file for TS1/qpl
+)
+Overfull \hbox (0.90782pt too wide) in paragraph at lines 657--667
+\T1/qpl/m/n/12 (-20) web dash-board or di-rectly ma-nip-u-lat-ing Ku-ber-netes 
+re-sources through
+ []
+
+[15{/usr/share/texlive/texmf-dist/fonts/enc/dvips/tex-gyre/q-ts1.enc}] [16]
 Chapter 4.
-[10]
+[17]
 Chapter 5.
-[11]
+[18]
 Chapter 6.
-[12]
-Overfull \hbox (18.6004pt too wide) in paragraph at lines 476--476
+[19]
+Overfull \hbox (5.77179pt too wide) in paragraph at lines 740--740
+[]\T1/qpl/m/n/12 (-20) Kubeflow Con-trib-u-tors. \T1/qpl/m/it/12 (-20) Kube-flo
+w Doc-u-men-ta-tion\T1/qpl/m/n/12 (-20) . 2024. \T1/qpl/m/sc/12 (-20) url\T1/qp
+l/m/n/12 (-20) : []$\T1/lmtt/m/n/12 https :
+ []
+
+
+Overfull \hbox (23.7432pt too wide) in paragraph at lines 740--740
+\T1/lmtt/m/n/12 crd / bases / kubeflow . org _ notebooks . yaml$[] \T1/qpl/m/n/
+12 (-20) (vis-ited on 03/22/2026). 
+ []
+
+
+Overfull \hbox (24.6004pt too wide) in paragraph at lines 740--740
 []\T1/qpl/m/n/12 (-20) Patrick Lewis et al. ^^P  Retrieval-Augmented Gen-er-a-t
 ion for Knowledge-
  []
 
 
-Overfull \hbox (63.32559pt too wide) in paragraph at lines 476--476
+Overfull \hbox (69.32559pt too wide) in paragraph at lines 740--740
 \T1/qpl/m/it/12 (-20) GitHub Or-gan-i-sa-tion\T1/qpl/m/n/12 (-20) . 2024. \T1/q
 pl/m/sc/12 (-20) url\T1/qpl/m/n/12 (-20) : []$\T1/lmtt/m/n/12 https : / / githu
 b . com / modelcontextprotocol$[]
  []
 
-[13] (./bachelor_thesis.aux)
+
+Overfull \hbox (19.64131pt too wide) in paragraph at lines 740--740
+\T1/qpl/m/n/12 (-20) 2024. \T1/qpl/m/sc/12 (-20) url\T1/qpl/m/n/12 (-20) : []$\
+T1/lmtt/m/n/12 https : / / opendatahub . io / docs/$[] \T1/qpl/m/n/12 (-20) (vi
+s-ited on 03/22/2026). 
+ []
+
+
+Overfull \hbox (21.30965pt too wide) in paragraph at lines 740--740
+\T1/lmtt/m/n/12 container -[] platform / latest / openshift _ images / image -[
+] streams -[]
+ []
+
+[20]
+Overfull \hbox (33.15965pt too wide) in paragraph at lines 740--740
+\T1/lmtt/m/n/12 com / container -[] platform / latest / authentication / unders
+tanding -[]
+ []
+
+
+Overfull \hbox (14.63464pt too wide) in paragraph at lines 740--740
+\T1/lmtt/m/n/12 container -[] platform / latest / applications / projects / wor
+king -[]
+ []
+
+
+Overfull \hbox (24.7432pt too wide) in paragraph at lines 740--740
+\T1/lmtt/m/n/12 overview / working -[] with -[] objects / labels/$[] \T1/qpl/m/
+n/12 (-20) (vis-ited on 03/22/2026). 
+ []
+
+[21]
+Overfull \hbox (4.90944pt too wide) in paragraph at lines 740--740
+\T1/lmtt/m/n/12 workloads / controllers / statefulset/$[] \T1/qpl/m/n/12 (-20) 
+(vis-ited on 03/22/2026). 
+ []
+
+[22] (./bachelor_thesis.aux)
 Package rerunfilecheck Info: File `bachelor_thesis.out' has not changed.
-(rerunfilecheck)             Checksum: 599A2ECB7B563FB61D6CE099C3C20C83;2550.
+(rerunfilecheck)             Checksum: DA3E2A1829DAE8179C79FF5C52EBAD10;3353.
 Package logreq Info: Writing requests to 'bachelor_thesis.run.xml'.
 \openout1 = `bachelor_thesis.run.xml'.
 
  ) 
 Here is how much of TeX's memory you used:
- 41959 strings out of 476041
- 811008 string characters out of 5793174
- 1864388 words of memory out of 6000000
- 61415 multiletter control sequences out of 15000+600000
- 577943 words of font info for 159 fonts, out of 8000000 for 9000
+ 42153 strings out of 476041
+ 815821 string characters out of 5793174
+ 1865388 words of memory out of 6000000
+ 61513 multiletter control sequences out of 15000+600000
+ 581005 words of font info for 181 fonts, out of 8000000 for 9000
  1139 hyphenation exceptions out of 8191
- 98i,8n,96p,1160b,2337s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 98i,8n,96p,1160b,2353s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr
 /share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share
 /texlive/texmf-dist/fonts/type1/public/lm/lmtt12.pfb></usr/share/texlive/texmf-
@@ -1926,10 +2001,10 @@ type1/public/tex-gyre/qhvr.pfb></usr/share/texlive/texmf-dist/fonts/type1/publi
 c/tex-gyre/qplb.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/tex-gyre/
 qplr.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/tex-gyre/qplri.pfb><
 /usr/share/texlive/texmf-dist/fonts/type1/urw/palatino/uplri8a.pfb>
-Output written on bachelor_thesis.pdf (22 pages, 312909 bytes).
+Output written on bachelor_thesis.pdf (31 pages, 344210 bytes).
 PDF statistics:
- 407 PDF objects out of 1000 (max. 8388607)
- 358 compressed objects within 4 object streams
- 75 named destinations out of 1000 (max. 500000)
- 32588 words of extra memory for PDF output out of 35830 (max. 10000000)
+ 603 PDF objects out of 1000 (max. 8388607)
+ 542 compressed objects within 6 object streams
+ 123 named destinations out of 1000 (max. 500000)
+ 34716 words of extra memory for PDF output out of 35830 (max. 10000000)
 

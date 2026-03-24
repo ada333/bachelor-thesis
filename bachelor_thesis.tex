@@ -397,14 +397,278 @@ JupyterLab environments.
 \section{Kubernetes and OpenShift}
 \label{sec:kubernetes}
 
-\section{Kubeflow and Red Hat OpenShift AI}
-\label{sec:rhoai}
+\subsection{Kubernetes Architecture}
+\label{subsec:kubernetes-arch}
+
+Kubernetes is an open-source platform for automating the deployment, scaling,
+and management of containerised applications~\parencite{kubernetes-docs}. It
+was originally designed by Google and is now maintained by the Cloud Native
+Computing Foundation (CNCF). Kubernetes provides a declarative configuration
+model: users describe the \emph{desired state} of their applications in YAML or
+JSON manifests, and the platform's control loop continuously reconciles the
+actual state of the cluster to match. This section introduces the core Kubernetes
+architectural concepts that are relevant to the MCP server implemented in this
+thesis.
+
+\paragraph{Nodes and the control plane.}
+A Kubernetes cluster consists of a \emph{control plane} and a set of worker
+machines called \emph{nodes}. The control plane runs the API server, scheduler,
+and controller manager. They accept user requests, decide where
+workloads should run, and ensure the desired state is maintained. Each worker
+node runs a \texttt{kubelet} agent that manages the \emph{pods} (the smallest
+deployable units, described below) scheduled on that node and reports status
+back to the control plane~\parencite{kubernetes-docs}.
+
+\paragraph{Pods.}
+The smallest deployable unit in Kubernetes is a \emph{pod} --- a group of one
+or more containers that share the same network namespace and
+storage~\parencite{kubernetes-pods}. In practice, most pods contain a single
+application container. Every workbench in Red Hat OpenShift AI ultimately runs
+as a pod, and the MCP server lists pods to retrieve workbench uptime.
+
+\paragraph{Namespaces.}
+Namespaces provide a mechanism for isolating groups of resources within a single
+cluster~\parencite{kubernetes-namespaces}. In the context of Red Hat OpenShift
+AI, each data-science project maps to a Kubernetes namespace. Almost every
+operation exposed by the MCP server --- listing workbenches or pods, creating storage,
+querying resource consumption --- is scoped to a namespace.
+
+\paragraph{Persistent Volumes and Persistent Volume Claims.}
+Containers are ephemeral by default: any data written inside a container is lost
+when the pod is terminated. Kubernetes addresses this with a two-layer storage
+abstraction~\parencite{kubernetes-pv}. A \emph{PersistentVolume} (PV)
+represents a piece of storage provisioned in the cluster. A
+\emph{PersistentVolumeClaim} (PVC) is a user's request for storage; when a PVC
+is created, Kubernetes binds it to a suitable PV. Workbenches mount a
+PVC to persist notebooks and data across restarts, and the MCP server provides
+tools to create, resize, and delete PVCs.
+
+\paragraph{Labels and annotations.}
+Kubernetes objects carry two kinds of key-value metadata~\parencite{kubernetes-labels}.
+\emph{Labels} are used for selection and grouping --- for example, querying all
+pods that belong to a particular workbench. \emph{Annotations} store
+non-identifying metadata such as display names, image version hashes, or
+hardware profile references. The MCP server reads and writes annotations
+extensively: workbench status, the selected notebook image, and the hardware
+profile are all stored as annotations on the underlying Kubernetes object.
+
+\paragraph{StatefulSets.}
+A \emph{StatefulSet} manages a set of pods with stable network identities and
+persistent storage~\parencite{kubernetes-statefulsets}. Unlike a Deployment,
+which treats all pods as interchangeable, a StatefulSet guarantees that each pod
+retains its identity and its associated PVC across rescheduling. Workbenches are
+backed by StatefulSets, which ensures that a user's notebook environment is
+preserved even if the underlying node changes.
+
+\paragraph{Custom Resource Definitions.}
+One of Kubernetes' most powerful extensibility features is the ability to define
+\emph{Custom Resource Definitions}
+(CRDs)~\parencite{kubernetes-crd}. A CRD registers a new resource type with
+the Kubernetes API server, allowing users and operators to manage
+domain-specific objects --- such as machine learning notebooks --- with the same
+tools and workflows used for built-in resources like pods or services. The
+Kubeflow project defines a \texttt{Notebook} CRD (API group
+\texttt{kubeflow.org/v1}) that represents a single notebook environment; this is
+the resource that the MCP server creates, updates, and deletes when managing
+workbenches.
+
+\subsection{Red Hat OpenShift}
+\label{subsec:openshift}
+
+Red Hat OpenShift is a commercial Kubernetes distribution developed by
+Red Hat~\parencite{openshift-docs}. It packages upstream Kubernetes with a
+curated set of additional components and wraps them in enterprise support,
+certified operators, and a hardened security model. While any standard
+Kubernetes cluster can run containerised workloads, OpenShift adds several
+features that are particularly relevant to the platform stack discussed in this
+thesis.
+
+\paragraph{Projects.}
+OpenShift introduces the concept of a \emph{project}, which is a thin wrapper
+around a Kubernetes namespace that adds default role bindings, network
+policies, and resource quotas~\parencite{openshift-projects}. In practice,
+every OpenShift project maps one-to-one to a namespace, and the terms are often
+used interchangeably. Red Hat OpenShift AI uses projects to represent
+data-science teams; the MCP server operates on these projects through the
+underlying Kubernetes namespace API.
+
+\paragraph{ImageStreams.}
+Standard Kubernetes references container images by their full registry URL.
+OpenShift extends this model with
+\emph{ImageStreams}~\parencite{openshift-imagestreams}, which are cluster-level
+objects that track one or more tagged versions of a container image. An
+ImageStream decouples workloads from specific registry URLs: when a new image
+version is pushed, the ImageStream is updated and can automatically trigger
+redeployments. Red Hat OpenShift AI uses ImageStreams (API group
+\texttt{image.openshift.io/v1}) to manage the catalogue of notebook images
+available for workbenches. The MCP server queries and creates ImageStreams when
+listing available images or registering custom notebook images.
+
+\paragraph{Routes and built-in OAuth.}
+OpenShift provides \emph{Routes} as a native mechanism for exposing HTTP and
+HTTPS services to external traffic~\parencite{openshift-routes}, fulfilling
+a role similar to Kubernetes Ingress but with tighter integration into the
+platform. Each workbench is exposed through a Route, which gives it a stable
+URL. OpenShift also ships a built-in OAuth server that handles user
+authentication~\parencite{openshift-oauth}. Workbenches leverage this to
+ensure that only authenticated users can access their JupyterLab environments.
+
+\paragraph{Operators and the Operator Lifecycle Manager.}
+OpenShift uses the \emph{Operator} pattern extensively to manage complex
+software on top of the cluster~\parencite{openshift-operators}. An Operator is
+a Kubernetes controller that watches custom resources and reconciles them toward
+their desired state. The Operator Lifecycle Manager (OLM) handles installation,
+upgrades, and dependency resolution for Operators. Red Hat OpenShift AI itself
+is installed as an Operator, which in turn deploys and manages the Kubeflow
+components, dashboard, and other services that make up the platform.
+
+\section{Kubeflow, Open Data Hub, and Red Hat OpenShift AI}
+\label{sec:kubeflow-odh-rhoai}
+\subsection{Kubeflow}
+\label{subsec:kubeflow}
+Kubeflow is an open-source project that aims to make deployments of machine
+learning workflows on Kubernetes simple, portable, and
+scalable~\parencite{kubeflow-docs}. Rather than being a single monolithic
+application, Kubeflow is a collection of components --- each
+addressing a different stage of the ML lifecycle --- that are deployed as
+Operators and custom resources on a Kubernetes cluster. Key components include
+Kubeflow Pipelines for orchestrating multi-step training workflows, KServe for
+model serving, Katib for hyperparameter tuning, and Kubeflow Notebooks for
+interactive development environments.
+
+From the perspective of this thesis, the most important Kubeflow component is
+\textbf{Kubeflow Notebooks}, which provides a safe, scalable place for data scientists
+to write code. The Notebook CRD, its controller, and its relationship to
+RHOAI workbenches are discussed in detail in
+Section~\ref{sec:notebooks-workbenches}.
+
+\subsection{Red Hat OpenShift AI}
+\label{subsec:rhoai-platform}
+
+Red Hat OpenShift AI (RHOAI) is Red Hat's commercial machine-learning platform
+built on top of OpenShift~\parencite{rhoai-docs}. It is based on Open Data Hub
+(ODH)~\parencite{odh-docs}, a community-driven project that integrates
+upstream Kubeflow components with OpenShift-specific features.
+
+\subsection{Open Data Hub}
+\label{subsec:odh}
+
+Open Data Hub (ODH) is the upstream open-source community project from which
+Red Hat OpenShift AI is derived~\parencite{odh-docs}. ODH provides the same
+core components --- the dashboard, notebook controller, model serving, and
+pipeline infrastructure --- but without the enterprise hardening, certified
+Operators, or commercial support that RHOAI adds. Many of the custom resource
+API groups used by the MCP server (such as \texttt{opendatahub.io}) 
+originate from ODH and are inherited by RHOAI.
+The CRDs, labels, and annotations are largely shared between the two platforms.
+However, the MCP server targets RHOAI specifically because it assumes
+RHOAI-specific defaults such as the \texttt{redhat-ods-applications} namespace
+for discovering hardware profiles.
+
+\subsection{Hardware Profiles}
+\label{subsec:hardware-profiles}
+
+A \emph{hardware profile} is an RHOAI-specific custom resource 
+that defines a named set of
+compute-resource constraints for a workbench. Each profile specifies one or
+more resource identifiers --- typically CPU, memory, and optionally a GPU
+(referred to as an \emph{accelerator} in RHOAI) --- with
+a default, minimum, and maximum count for each. When a user creates a
+workbench, they select a hardware profile. Platform then translates the
+profile's resource definitions into Kubernetes resource requests and limits on
+the workbench's pod. Administrators can create hardware profiles to standardise
+the compute tiers available to data scientists (for example, \enquote{Small} with 2
+CPUs and 4\,GiB of memory, or \enquote{GPU Large} with 8 CPUs, 32\,GiB, and one
+NVIDIA GPU). The MCP server provides tools to list, create, update, and delete
+hardware profiles and to attach them to workbenches.
 
 \section{Kubeflow Notebooks and Workbenches}
 \label{sec:notebooks-workbenches}
 
+This section describes the topmost layer of the platform stack: the interactive
+development environments that data scientists use daily. The upstream Kubeflow
+project calls them \emph{Notebooks}; Red Hat OpenShift AI calls them
+\emph{workbenches}. Under the hood they are the same Kubernetes resource, but
+RHOAI adds additional metadata and dashboard integration.
+
+\subsection{The Kubeflow Notebook CRD}
+\label{subsec:notebook-crd}
+
+The Kubeflow Notebook Controller defines a Custom Resource Definition called
+\texttt{Notebook} in the API group
+\texttt{kubeflow.org/v1}~\parencite{kubeflow-notebook-crd}. A \texttt{Notebook}
+resource is structurally similar to a Kubernetes \texttt{StatefulSet}: it
+contains a pod template that specifies the container image, resource requests
+and limits, volume mounts, and environment variables. When a \texttt{Notebook}
+resource is created, the Notebook Controller creates the corresponding
+StatefulSet, which in turn creates a pod running the specified container image
+--- typically a JupyterLab server.
+
+The Notebook Controller also handles lifecycle operations. Setting the
+annotation \texttt{kubeflow-resource-stopped} to a timestamp causes the
+controller to scale the StatefulSet to zero replicas, effectively stopping the
+notebook without deleting it. Removing the annotation restarts it. This
+mechanism is how both the RHOAI dashboard and the MCP server start and stop
+workbenches.
+
+\subsection{RHOAI Workbenches}
+\label{subsec:rhoai-workbenches}
+
+In Red Hat OpenShift AI, a \emph{workbench} is a Kubeflow \texttt{Notebook}
+resource enriched with additional annotations and integrated into the RHOAI
+dashboard~\parencite{rhoai-workbenches}. The RHOAI dashboard is the primary
+way users interact with workbenches today. When a user creates a workbench
+through the dashboard, it constructs a \texttt{Notebook} manifest with
+RHOAI-specific annotations such as:
+
+\begin{compactitem}
+  \item \texttt{opendatahub.io/image-display-name} --- the human-readable name
+        of the selected notebook image,
+  \item \texttt{opendatahub.io/hardware-profile-name} --- the hardware profile
+        governing CPU, memory, and GPU limits,
+  \item \texttt{opendatahub.io/username} --- the owner of the workbench,
+  \item \texttt{notebooks.opendatahub.io/last-image-selection} --- a reference
+        to the selected ImageStream tag for upgrade tracking.
+\end{compactitem}
+
+The dashboard then submits this manifest to the Kubernetes API, where the
+Notebook Controller picks it up and creates the running environment. Each
+workbench is backed by a PersistentVolumeClaim that stores the user's notebooks
+and data, and is exposed to the user via an OpenShift Route with OAuth
+authentication.
+
+\subsection{Notebook Images}
+\label{subsec:notebook-images}
+
+RHOAI ships a curated set of notebook images, each tailored to a specific
+workflow. Examples include images with pre-installed data-science libraries
+(NumPy, pandas, scikit-learn), PyTorch or TensorFlow for deep learning, and
+minimal images for lightweight experimentation. Each image is represented as an
+OpenShift ImageStream (see Section~\ref{subsec:openshift}) with one or more
+version tags. The images are labelled with
+\texttt{opendatahub.io/notebook-image=true} so that the dashboard and the MCP
+server can discover them. Administrators can also register custom images ---
+for example, an image with proprietary libraries --- by creating a new
+ImageStream with the appropriate labels and annotations.
+
+\subsection{The Current Management Workflow}
+\label{subsec:current-workflow}
+
+Today, managing workbenches requires either navigating the RHOAI web dashboard
+or directly manipulating Kubernetes resources through \texttt{oc} or
+\texttt{kubectl}. Both approaches have limitations. The dashboard is
+user-friendly but manual: creating, stopping, or reconfiguring multiple
+workbenches is time-consuming and does not lend itself to automation. The
+command-line approach is scriptable but requires deep knowledge of the
+underlying CRDs, annotations, and resource relationships described in this
+chapter. The MCP server implemented in this thesis bridges this gap by exposing
+all workbench management operations as tools that an AI agent can invoke through
+natural language.
+
 \section{MCP Tooling in RHOAI}
 \label{sec:mcp-in-rhoai}
+I think this subchapter is not needed --
+Lets do this subchapter only if there is not enough text in thesis.
 
 %% ---------------------------------------------------------------------------
 %% Chapter 3 -- Analysis and Design
