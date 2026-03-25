@@ -548,7 +548,12 @@ Section~\ref{sec:notebooks-workbenches}.
 Red Hat OpenShift AI (RHOAI) is Red Hat's commercial machine-learning platform
 built on top of OpenShift~\parencite{rhoai-docs}. It is based on Open Data Hub
 (ODH)~\parencite{odh-docs}, a community-driven project that integrates
-upstream Kubeflow components with OpenShift-specific features.
+upstream Kubeflow components with OpenShift-specific features. RHOAI is
+installed on an OpenShift cluster as an Operator and provides a web-based
+\emph{dashboard} --- a graphical interface from which users can create
+data-science projects, launch and manage workbenches, configure notebook images
+and hardware profiles, and monitor resource consumption without writing any
+YAML or using the command line.
 
 \subsection{Open Data Hub}
 \label{subsec:odh}
@@ -601,7 +606,7 @@ resource is structurally similar to a Kubernetes \texttt{StatefulSet}: it
 contains a pod template that specifies the container image, resource requests
 and limits, volume mounts, and environment variables. When a \texttt{Notebook}
 resource is created, the Notebook Controller creates the corresponding
-StatefulSet, which in turn creates a pod running the specified container image
+StatefulSet, which then creates a pod running the specified container image
 --- typically a JupyterLab server.
 
 The Notebook Controller also handles lifecycle operations. Setting the
@@ -633,23 +638,26 @@ RHOAI-specific annotations such as:
 
 The dashboard then submits this manifest to the Kubernetes API, where the
 Notebook Controller picks it up and creates the running environment. Each
-workbench is backed by a PersistentVolumeClaim that stores the user's notebooks
-and data, and is exposed to the user via an OpenShift Route with OAuth
-authentication.
+workbench is backed by a PersistentVolumeClaim that stores the user's data, 
+and is exposed to the user via an OpenShift Route with OAuth
+authentication. The MCP server implemented in this thesis follows the same
+approach: it constructs \texttt{Notebook} manifests with the same annotations
+and submits them to the Kubernetes API, effectively replicating what the
+dashboard does but driven by an AI agent through natural language.
 
 \subsection{Notebook Images}
 \label{subsec:notebook-images}
 
-RHOAI ships a curated set of notebook images, each tailored to a specific
+RHOAI ships a curated set of notebook images, each used for a specific
 workflow. Examples include images with pre-installed data-science libraries
 (NumPy, pandas, scikit-learn), PyTorch or TensorFlow for deep learning, and
-minimal images for lightweight experimentation. Each image is represented as an
-OpenShift ImageStream (see Section~\ref{subsec:openshift}) with one or more
-version tags. The images are labelled with
-\texttt{opendatahub.io/notebook-image=true} so that the dashboard and the MCP
-server can discover them. Administrators can also register custom images ---
-for example, an image with proprietary libraries --- by creating a new
-ImageStream with the appropriate labels and annotations.
+minimal images for lightweight experimentation and testing. Each image is 
+represented as an OpenShift ImageStream (see Section~\ref{subsec:openshift}) 
+with one or more version tags. 
+Custom images --- for example, an image with a development version of a library
+not yet available in the default catalogue --- can be registered through the
+RHOAI dashboard or by creating an ImageStream directly. The MCP server provides tools to list (with additional
+metadata), create, update, and delete notebook images.
 
 \subsection{The Current Management Workflow}
 \label{subsec:current-workflow}
@@ -658,7 +666,7 @@ Today, managing workbenches requires either navigating the RHOAI web dashboard
 or directly manipulating Kubernetes resources through \texttt{oc} or
 \texttt{kubectl}. Both approaches have limitations. The dashboard is
 user-friendly but manual: creating, stopping, or reconfiguring multiple
-workbenches is time-consuming and does not lend itself to automation. The
+workbenches is time-consuming. The
 command-line approach is scriptable but requires deep knowledge of the
 underlying CRDs, annotations, and resource relationships described in this
 chapter. The MCP server implemented in this thesis bridges this gap by exposing
