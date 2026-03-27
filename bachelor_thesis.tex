@@ -389,7 +389,7 @@ deployments~\parencite{mcp-spec}.
 
 This chapter describes the fundamental concepts of Red Hat OpenShift AI and workbenches.
 These concepts are the foundation for the MCP server implementation and architecture
-choices. The chapters follow the layered architecture from bottom to
+choices. The sections follow the layered architecture from bottom to
 top: first OpenShift (based on Kubernetes) as the infrastructure layer, then Red Hat
 OpenShift AI (based on Kubeflow) as the machine-learning platform, and finally workbenches (based on Kubeflow notebooks) as the user-facing
 JupyterLab environments.
@@ -423,7 +423,7 @@ back to the control plane~\parencite{kubernetes-docs}.
 The smallest deployable unit in Kubernetes is a \emph{pod} --- a group of one
 or more containers that share the same network namespace and
 storage~\parencite{kubernetes-pods}. In practice, most pods contain a single
-application container. Every workbench in Red Hat OpenShift AI ultimately runs
+application container. Every workbench in Red Hat OpenShift AI runs
 as a pod, and the MCP server lists pods to retrieve workbench uptime.
 
 \paragraph{Namespaces.}
@@ -442,15 +442,6 @@ represents a piece of storage provisioned in the cluster. A
 is created, Kubernetes binds it to a suitable PV. Workbenches mount a
 PVC to persist notebooks and data across restarts, and the MCP server provides
 tools to create, resize, and delete PVCs.
-
-\paragraph{Labels and annotations.}
-Kubernetes objects carry two kinds of key-value metadata~\parencite{kubernetes-labels}.
-\emph{Labels} are used for selection and grouping --- for example, querying all
-pods that belong to a particular workbench. \emph{Annotations} store
-non-identifying metadata such as display names, image version hashes, or
-hardware profile references. The MCP server reads and writes annotations
-extensively: workbench status, the selected notebook image, and the hardware
-profile are all stored as annotations on the underlying Kubernetes object.
 
 \paragraph{StatefulSets.}
 A \emph{StatefulSet} manages a set of pods with stable network identities and
@@ -471,6 +462,19 @@ Kubeflow project defines a \texttt{Notebook} CRD (API group
 \texttt{kubeflow.org/v1}) that represents a single notebook environment; this is
 the resource that the MCP server creates, updates, and deletes when managing
 workbenches.
+
+\paragraph{Labels and annotations.}
+Kubernetes objects carry two kinds of key-value
+metadata~\parencite{kubernetes-labels}. \emph{Labels} are used for selection
+and filtering --- for example, RHOAI marks all notebook ImageStreams with the
+label \texttt{opendatahub.io/notebook-image=true} so that they can be
+distinguished from other ImageStreams in the namespace that are not notebook
+images. \emph{Annotations} store
+non-identifying metadata such as display names, image version hashes, or
+hardware profile references. The MCP server reads and writes annotations
+extensively: workbench status, the selected notebook image, and the hardware
+profile are all stored as annotations on the workbench resource, as described
+in section~\ref{sec:notebooks-workbenches}.
 
 \subsection{Red Hat OpenShift}
 \label{subsec:openshift}
@@ -495,8 +499,9 @@ underlying Kubernetes namespace API.
 \paragraph{ImageStreams.}
 Standard Kubernetes references container images by their full registry URL.
 OpenShift extends this model with
-\emph{ImageStreams}~\parencite{openshift-imagestreams}, which are cluster-level
-objects that track one or more tagged versions of a container image. An
+\emph{ImageStreams}~\parencite{openshift-imagestreams}, which are
+namespace-scoped objects that track one or more tagged versions of a container
+image. An
 ImageStream decouples workloads from specific registry URLs: when a new image
 version is pushed, the ImageStream is updated and can automatically trigger
 redeployments. Red Hat OpenShift AI uses ImageStreams (API group
@@ -656,8 +661,9 @@ represented as an OpenShift ImageStream (see Section~\ref{subsec:openshift})
 with one or more version tags. 
 Custom images --- for example, an image with a development version of a library
 not yet available in the default catalogue --- can be registered through the
-RHOAI dashboard or by creating an ImageStream directly. The MCP server provides tools to list (with additional
-metadata), create, update, and delete notebook images.
+RHOAI dashboard or by creating an ImageStream directly. The MCP server provides
+tools to list (with additional metadata), create, update, and delete notebook
+images.
 
 \subsection{The Current Management Workflow}
 \label{subsec:current-workflow}
