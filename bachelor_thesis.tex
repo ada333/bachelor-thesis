@@ -690,17 +690,331 @@ Lets do this subchapter only if there is not enough text in thesis.
 \chapter{Analysis and Design}
 \label{chap:analysis}
 
+The previous chapters introduced the Model Context Protocol as a standardised
+way of connecting AI agents to external tools
+(Chapter~\ref{chap:ai-mcp}) and described Red Hat OpenShift AI workbenches
+together with the Kubernetes resources that underlie them
+(Chapter~\ref{chap:rhoai}). This chapter bridges the gap between that
+background knowledge and the implementation itself. It begins by stating the
+motivation for the project and the concrete goals it aims to achieve, then
+derives a set of functional and non-functional requirements, justifies the
+key technology choices, and presents the architecture of the server.
+
 \section{Motivation and Goals}
 \label{sec:motivation}
+
+As described in Section~\ref{subsec:current-workflow}, managing RHOAI
+workbenches today requires either navigating the web dashboard or directly
+manipulating Kubernetes resources through the \texttt{oc}/\texttt{kubectl} commands. The
+dashboard is accessible but manual --- performing repetitive tasks such as
+creating or monitoring several workbench instances, or querying resource consumption 
+across the cluster involves
+a time-consuming sequence of clicks with no way to script or automate the
+process. The command-line approach is scriptable but demands deep knowledge of
+the Kubeflow Notebook CRD, the RHOAI-specific annotations described in
+Section~\ref{subsec:rhoai-workbenches}, and extensive knowledge of the platform. In practice,
+this means that only experienced platform engineers can perform workbench
+management tasks efficiently, while data scientists --- the primary users of
+workbenches --- are limited to the dashboard.
+
+The emergence of the Model Context Protocol offers a third option: expose the
+full workbench management lifecycle as MCP tools and let an AI agent act as
+the intermediary between the user and the cluster. A data scientist can then
+describe what they need in natural language --- \enquote{create three
+workbenches with an image containing PyTorch and pandas, each having 4 CPUs and 16\,GiB of memory} --- and the agent
+selects the correct tool, constructs the parameters, and executes the
+operation. This approach combines the accessibility of the dashboard with the
+power and automation potential of the command line, while requiring no
+Kubernetes expertise from the user.
+
+It is worth noting that the current implementation targets the existing
+Kubeflow-based workbench architecture described in
+Chapter~\ref{chap:rhoai} and is intended as a proof of concept.
+Notebooks~2.0, a redesigned notebook subsystem, is expected to be released
+and integrated into RHOAI later this year. The implications of this
+transition and the changes it will require in the MCP server are discussed
+in Section~\ref{sec:future-work}.
+
+With this motivation in mind, the thesis pursues the following goals:
+
+\begin{enumerate}
+  \item \textbf{Full workbench lifecycle coverage.} Provide MCP tools for
+        the complete set of workbench management operations: listing,
+        creating, updating, and deleting workbenches, notebook images,
+        hardware profiles, persistent volume claims, and namespaces.
+
+  \item \textbf{Resource consumption monitoring.} Provide tools to query
+        resource consumption (CPU, memory, disk, and GPU) at multiple
+        granularities --- per workbench, per namespace, per user, and per
+        cluster --- giving administrators and data scientists visibility
+        into how compute resources are being used.
+
+  \item \textbf{Safety by default.} Operate in a read-only mode by default,
+        exposing only listing and querying tools. Write operations ---
+        creation, modification, and deletion --- are gated behind an explicit
+        opt-in mechanism so that users can explore the server's capabilities
+        without risk of accidental modifications to the cluster.
+
+  \item \textbf{Quality assurance.} Validate correctness through unit tests
+        and automated evaluation of end-to-end agent behaviour, measuring
+        tool selection accuracy, parameter extraction correctness, and
+        execution success rate. This also serves the proof-of-concept
+        purpose by establishing a methodology for evaluating MCP server
+        implementations.
+
+  \item \textbf{Exploration of all MCP primitives.} Since the
+        implementation serves as a proof of concept, exercise the full
+        breadth of the MCP standard --- not only tools, but also resources
+        and prompts. Specifically, expose MCP resources (an image catalogue
+        and a default hardware profile) and an MCP prompt that orchestrates
+        a guided workbench creation workflow, demonstrating how the three
+        server primitives can work together in practice.
+\end{enumerate}
 
 \section{Requirements}
 \label{sec:requirements}
 
-\section{Architecture}
-\label{sec:architecture}
+This section translates the goals from Section~\ref{sec:motivation} into
+concrete requirements. Functional requirements describe \emph{what} the
+system must do; non-functional requirements describe \emph{how} it must
+behave.
+
+\subsection{Functional Requirements}
+\label{subsec:functional-req}
+
+\begin{enumerate}
+  \item \textbf{FR-1: Workbench CRUD.} The server must provide tools to
+        list, create, update, and delete workbenches. Listing must support
+        both a single-namespace and a cross-namespace mode. Each workbench
+        entry must include the workbench name, notebook image, hardware profile, and attached
+        persistent volume claim.
+
+  \item \textbf{FR-2: Workbench lifecycle control.} The server must provide
+        a tool to start and stop a workbench without deleting it, using the
+        \texttt{kubeflow-resource-stopped} annotation mechanism described in
+        Section~\ref{subsec:notebook-crd}.
+
+  \item \textbf{FR-3: Notebook image management.} The server must provide
+        tools to list all available notebook images (including version tags,
+        Python dependencies, and bundled software), create custom images by
+        registering new ImageStreams, update existing images, and delete them.
+
+  \item \textbf{FR-4: Hardware profile management.} The server must provide
+        tools to list, create, update, and delete hardware profiles, each
+        specifying resource identifiers (CPU, memory, and optionally GPU)
+        with default, minimum, and maximum values.
+
+  \item \textbf{FR-5: Storage management.} The server must provide tools to
+        list persistent volume claims in a namespace, create new PVCs with a
+        given size, and resize existing PVCs (expansion only, as Kubernetes
+        does not support shrinking PVCs).
+
+  \item \textbf{FR-6: Namespace and pod listing.} The server must provide
+        tools to list all namespaces in the cluster and to list pods in a
+        given namespace.
+
+  \item \textbf{FR-7: Resource consumption monitoring.} The server must
+        provide tools to query resource consumption (CPU, memory, disk, and
+        GPU) at four granularities: per workbench, per namespace, per user,
+        and per cluster.
+
+  \item \textbf{FR-8: MCP resources.} The server must expose at least one
+        MCP resource to demonstrate the resource primitive and its usage in
+        a real-world scenario.
+
+  \item \textbf{FR-9: MCP prompt.} The server must expose at least one MCP
+        prompt to demonstrate the prompt primitive and its usage in a
+        real-world scenario.
+\end{enumerate}
+
+\subsection{Non-Functional Requirements}
+\label{subsec:nonfunctional-req}
+
+\begin{enumerate}
+  \item \textbf{NFR-1: Safety.} The server must start in read-only mode by
+        default. Write operations (create, update, delete) must only be
+        registered when an explicit environment variable
+        (\texttt{MCP\_RHOAI\_MODE=write}) is set.
+
+  \item \textbf{NFR-2: Host independence.} The server must communicate
+        exclusively through the MCP standard and must not contain any
+        host-specific code. It must be usable from any MCP-compatible host.
+
+  \item \textbf{NFR-3: Local cluster authentication.} The server does not
+        manage its own authentication. The user must be logged in to an
+        OpenShift cluster locally (via \texttt{oc login}) before starting
+        the server. All Kubernetes API calls are executed using the
+        credentials stored in the user's \texttt{kubeconfig} file, and
+        therefore run with the permissions of the logged-in user.
+
+  \item \textbf{NFR-4: Code quality.} The codebase must pass static
+        analysis and linting checks, and follow clear package separation.
+
+  \item \textbf{NFR-5: Unit testing.} A selected subset of tools must have
+        unit tests that replace the real Kubernetes client with a mock,
+        demonstrating that it is feasible to test MCP tool implementations
+        against a simulated OpenShift cluster without access to a live
+        environment.
+
+  \item \textbf{NFR-6: Evaluation.} End-to-end agent behaviour must be
+        evaluable through an automated framework that measures tool
+        selection accuracy, parameter extraction correctness, and execution
+        success rate.
+\end{enumerate}
 
 \section{Technology Choices}
 \label{sec:technologies}
+
+This section justifies and describes the key technology used for the
+implementation.
+
+\paragraph{Go.}
+The server is written in Go~\parencite{go-lang}. Go was chosen for two
+reasons. First, it is the dominant language in the Kubernetes ecosystem ---
+Kubernetes itself, OpenShift, and the Kubeflow Notebook Controller are all
+written in Go, and the official Kubernetes client library
+(\texttt{client-go}) is a Go module. Using Go means the server can import
+\texttt{client-go} directly without a foreign-function interface or an
+HTTP wrapper. A Python or TypeScript implementation would need to
+communicate with the cluster through a generated REST client or a wrapper
+library rather than using the same native client that Kubernetes itself
+uses. Second, Go compiles to a single static binary with no runtime
+dependencies, which simplifies distribution --- users only need to place
+the binary on their \texttt{PATH} and point their MCP host configuration at
+it. By contrast, a Python-based server would require the user to have a
+compatible Python interpreter and manage a virtual environment with the
+correct dependencies installed.
+
+\paragraph{MCP Go SDK.}
+The server uses the official MCP Go SDK~\parencite{mcp-go-sdk} (version 1.1.0)
+for all protocol-level concerns: creating the MCP server instance,
+registering tools with their JSON Schema input definitions (derived
+automatically from Go struct tags), registering resources and prompts, and
+running the stdio transport loop. The SDK's typed tool registration function
+(\texttt{mcp.AddTool}) accepts a Go struct as the input type and
+automatically generates the JSON Schema that is advertised to the host,
+eliminating manual schema maintenance.
+
+\paragraph{golangci-lint.}
+Static analysis is performed by
+\texttt{golangci-lint}~\parencite{golangci-lint}, a runner that aggregates
+multiple Go linters into a single invocation. It is integrated into the
+build process through the Makefile: \texttt{make build} runs
+\texttt{golangci-lint run} before compiling the binary, ensuring that code
+quality checks pass on every build.
+
+\paragraph{stdio transport.}
+The server uses the stdio transport
+(Section~\ref{subsec:mcp-transport}) exclusively. This choice is driven by
+the deployment model: the MCP server runs as a local process on the same
+machine as the AI host, launched and managed by the host's MCP client
+configuration. The stdio transport requires no network configuration, no
+TLS certificates, and no separate service deployment, which keeps the setup
+minimal. If remote deployment is needed in the future, switching to the
+HTTP/SSE or Streamable HTTP transport would require changing only the
+transport initialisation in the entry point.
+
+\paragraph{Promptfoo.}
+End-to-end evaluation uses the Promptfoo
+framework~\parencite{promptfoo}, an open-source tool for testing LLM
+applications. Alternatives such as DeepEval were considered --- DeepEval
+offers over fifty evaluation metrics, including a dedicated
+tool-correctness metric, but that breadth introduces complexity that is
+unnecessary when the only goal is to evaluate tool-calling behaviour.
+Promptfoo is more focused: its entire configuration fits into a single
+YAML file, it requires no custom evaluation code, and it directly supports
+the workflow needed here --- sending natural-language prompts to an LLM,
+capturing the tool calls the model emits, and checking them against
+expected outcomes. It measures tool selection accuracy, parameter
+extraction correctness, and execution success rate. It also supports
+multiple LLM providers (OpenAI, Anthropic, Google), making it
+straightforward to compare tool-calling quality across models.
+
+
+\section{Architecture}
+\label{sec:architecture}
+
+This section describes the internal structure of the MCP server: how the
+codebase is organised, how the two operation modes are implemented, how the
+server communicates with the OpenShift cluster, and how the project is
+built.
+
+\subsection{Project Structure}
+\label{subsec:project-structure}
+
+The project root contains two key files: \texttt{main.go}, which is the
+entry point that creates the MCP server instance, registers tools,
+resources, and prompts, and starts the stdio transport loop; and a
+\texttt{Makefile} that drives the build pipeline described in
+Section~\ref{subsec:build-pipeline}. The remaining code is organised into
+four packages:
+
+\begin{compactitem}
+  \item \texttt{core} --- shared type definitions (input/output structs for
+        every tool), Kubernetes GroupVersionResource constants, and cluster
+        authentication helpers.
+  \item \texttt{tools} --- the implementation of every MCP tool, plus a
+        registry module that registers tools with the MCP server. The
+        registry exposes two functions:
+        \texttt{RegisterReadOnlyTools}, which registers the listing and
+        monitoring tools that are always available, and
+        \texttt{RegisterWriteTools}, which additionally registers the
+        create, update, and delete tools. The entry point inspects the
+        \texttt{MCP\_RHOAI\_MODE} environment variable and calls one or both
+        functions accordingly.
+  \item \texttt{resources} --- the implementations of the two MCP
+        resources: the Image Catalog and the Default Hardware Profile.
+        A registry module registers both resources with the MCP server.
+  \item \texttt{prompts} --- the implementation of the Create Workbench
+        MCP prompt, together with a registry module that registers it with
+        the MCP server.
+\end{compactitem}
+
+\subsection{Two-Mode Design}
+\label{subsec:two-mode}
+
+The server's safety model is implemented at the registration level rather
+than at the execution level. When the server starts, the entry point checks
+the \texttt{MCP\_RHOAI\_MODE} environment variable. If the value is
+\texttt{write}, the server calls \texttt{RegisterWriteTools} followed by
+\texttt{RegisterReadOnlyTools}, making all tools available. For any other
+value (or when the variable is not set), only
+\texttt{RegisterReadOnlyTools} is called. Because tools that are not
+registered are never advertised to the host during capability negotiation,
+the LLM cannot invoke them --- it does not know they exist. This approach is
+simpler and more robust than runtime permission checks, since there is no
+code path that could accidentally bypass a guard.
+
+\subsection{Kubernetes Client Strategy}
+\label{subsec:client-strategy}
+
+The server uses two types of Kubernetes clients from the
+\texttt{client-go} library~\parencite{client-go}. The \textbf{typed client}
+(\texttt{kubernetes.Clientset}) is used for operations on built-in
+resources such as pods and namespaces, where the Go type system provides
+compile-time safety. The \textbf{dynamic client}
+(\texttt{dynamic.DynamicClient}) is used for custom resources --- Kubeflow
+Notebooks, OpenShift ImageStreams, and hardware profiles --- where no
+generated Go types are available and the server must work with
+\texttt{unstructured.Unstructured} objects. Both clients are constructed from
+the user's \texttt{kubeconfig} file, reusing whatever credentials and
+permissions the user has when they run \texttt{oc login}.
+
+To support unit testing, both clients are exposed as package-level function
+variables (\texttt{GetClientSet} and \texttt{GetDynamicClient}) that can be
+replaced with mock implementations in test code, satisfying NFR-5.
+
+\subsection{Build Pipeline}
+\label{subsec:build-pipeline}
+
+The project uses a Makefile to integrate all quality checks into a single
+build command. Running \texttt{make build} executes three stages in
+sequence: first \texttt{golangci-lint run} to verify that the code passes
+all configured linters, then \texttt{go test} to run the unit test suite,
+and finally \texttt{go build} to compile the binary. If any stage fails,
+the build stops immediately. This ensures that every produced binary has
+passed both linting and tests. Evaluation is run separately via
+\texttt{make eval}, which invokes Promptfoo against the compiled server.
 
 %% ---------------------------------------------------------------------------
 %% Chapter 4 -- Implementation

@@ -175,3 +175,7 @@ Use **biblatex field names** (not plain BibTeX). Key fields per type:
 - Ranged: `\index{term|(}` ... `\index{term|)}`
 - Sort key: `\index{alpha@$\alpha$}`
 - Hierarchical: `\index{parent!child}`
+
+
+## Generate PDF
+ - after every change in bachelor_thesis.text automatically generate the pdf

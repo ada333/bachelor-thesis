@@ -25,3 +25,6 @@ _markdown_*/
 # Example/template files
 fi-pdflatex.*
 fi-lualatex.*
+
+.cursor/
+.vscode/
