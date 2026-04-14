@@ -86,6 +86,8 @@
 }
 \usepackage{floatrow} %% Putting captions above tables
 \floatsetup[table]{capposition=top}
+\usepackage{booktabs}    %% Professional table rules
+\usepackage{tabularx}    %% Full-width tables
 \usepackage[babel]{csquotes} %% Context-sensitive quotation marks
 \usepackage[backend=biber, style=numeric]{biblatex}
 \addbibresource{example.bib}
@@ -1022,38 +1024,459 @@ passed both linting and tests. Evaluation is run separately via
 \chapter{Implementation}
 \label{chap:implementation}
 
-\section{Project Structure}
-\label{sec:project-structure}
+The previous chapter defined the requirements, technology choices, and
+architecture of the MCP server. This chapter describes how the server was
+implemented. It walks through the specific MCP tools, resources, and the
+prompt that were implemented. The chapter
+closes with a discussion of security considerations, code quality
+practices, and the evaluation methodology.
 
 \section{MCP Tools}
 \label{sec:tools}
 
+The server exposes 24 MCP tools covering five resource domains. Each
+subsection below opens with a table listing its tools and then discusses
+the design decisions and non-trivial implementation details. In all
+tables, tools marked \textit{(write)} are only registered when the
+environment variable \texttt{MCP\_RHOAI\_MODE=write} is set; all other
+tools are always available.
+
+Each tool is registered with the MCP server using the SDK's
+\texttt{mcp.AddTool} function, which accepts a \texttt{mcp.Tool}
+descriptor (name and description) and a Go function that implements the
+tool's logic. Every tool function follows the
+same high-level pattern: obtain a Kubernetes client, perform the required
+API call, transform the result into a typed output struct, and return it.
+Errors are propagated back to the host as standard MCP error responses.
+
 \subsection{Workbench Management}
 \label{subsec:workbench-tools}
+
+\begin{table}[!htbp]
+\caption{Workbench management tools.}
+\label{tab:tools-workbench}
+\small
+\begin{tabularx}{\textwidth}{lX}
+\toprule
+\textbf{Tool} & \textbf{Description} \\
+\midrule
+\texttt{list\_workbenches}        & List workbenches in a namespace \\
+\texttt{list\_all\_workbenches}    & List workbenches across all namespaces \\
+\texttt{create\_workbench}         & Create a new workbench \textit{(write)} \\
+\texttt{update\_workbench}         & Update image, hardware profile, or PVC \textit{(write)} \\
+\texttt{delete\_workbench}         & Delete a workbench \textit{(write)} \\
+\texttt{change\_workbench\_status} & Start or stop a workbench \textit{(write)} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The workbench management is the most complex part of the server, consisting of
+six tools (Table~\ref{tab:tools-workbench}) that operate on Kubeflow
+\texttt{Notebook} resources (API group \texttt{kubeflow.org/v1}) through
+the dynamic Kubernetes client.
+
+\paragraph{Listing.}
+The \texttt{list\_workbenches} tool is the foundation on which several
+other tools are build. For each \texttt{Notebook} resource in the specified
+namespace, the tool reads RHOAI-specific annotations to extract the
+image display name, image tag, hardware profile
+name, and owner. Running status is determined by the presence of the
+\texttt{kubeflow-resource-stopped} annotation: if set, the workbench is
+stopped; otherwise, it is running. For running workbenches, it
+additionally queries the typed client for pods labelled
+\texttt{notebook-name=<workbenchName>} to obtain uptime from the pod's
+start time. Disk usage is read from the PVC's requested storage capacity.
+The result is a list of \texttt{WorkbenchInfo} structs containing the
+workbench name, user, status, image, hardware profile, PVC name, namespace,
+uptime, and resource consumption (CPU, memory, disk, GPU). The
+\texttt{list\_all\_workbenches} tool reuses this logic with an empty
+namespace string, which in the Kubernetes API returns results across all
+namespaces, giving administrators a cluster-wide view.
+
+\paragraph{Creation.}
+The \texttt{create\_workbench} tool is the most complex in the
+server. It must resolve the user-specified image display name and tag to a
+concrete container image URL by looking up the corresponding ImageStream,
+optionally create a PVC (defaulting to the workbench name and 10\,GiB if
+none is provided), and fall back to the default hardware profile
+(Section~\ref{sec:resources-prompts}) when no profile is specified. The
+manifest is constructed as an \texttt{unstructured.Unstructured} object
+with the same annotations the RHOAI dashboard would set ---
+\texttt{opendatahub.io/image-display-name},
+\texttt{notebooks.opendatahub.io/last-image-selection},
+\texttt{opendatahub.io/hardware-profile-name}, among others. The
+container spec includes JupyterLab server arguments, two volume mounts
+(the user's PVC and a shared-memory \texttt{emptyDir}), and resource
+requests and limits derived from the hardware profile. After submission,
+the Notebook Controller creates the running environment. This design
+ensures that workbenches created through the MCP server are
+indistinguishable from those created through the dashboard.
+
+\paragraph{Updates and lifecycle control.}
+The \texttt{update\_workbench} tool supports three independent update
+dimensions --- the notebook image, the hardware profile, and the attached
+PVC --- each applied only when the corresponding input fields are
+non-empty, allowing partial updates. The
+\texttt{change\_workbench\_status} tool starts or stops a workbench by
+manipulating the \texttt{kubeflow-resource-stopped} annotation: setting it
+to the current timestamp stops the workbench; removing it (via a
+\texttt{nil} merge patch) restarts it. Before making any change, the
+tool checks the current state and returns early if the workbench is
+already in the requested state, avoiding redundant Kubernetes API calls.
+The \texttt{delete\_workbench} tool issues a single \texttt{Delete} call;
+the Notebook Controller handles cleanup of the associated StatefulSet and
+pod, but the PVC is intentionally preserved so that the user's data is
+not lost.
 
 \subsection{Hardware Profiles}
 \label{subsec:hardware-tools}
 
+\begin{table}[!htbp]
+\caption{Hardware profile tools.}
+\label{tab:tools-hw}
+\small
+\begin{tabularx}{\textwidth}{lX}
+\toprule
+\textbf{Tool} & \textbf{Description} \\
+\midrule
+\texttt{list\_hardware\_profiles}    & List all profiles in the RHOAI namespace \\
+\texttt{create\_hardware\_profile}   & Create a new profile \textit{(write)} \\
+\texttt{update\_hardware\_profile}   & Merge-update profile resources \textit{(write)} \\
+\texttt{delete\_hardware\_profile}   & Delete a profile \textit{(write)} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Four tools manage hardware profiles (API group
+\texttt{infrastructure.opendatahub.io/v1}). The listing tool returns
+each profile's resource identifiers with their default, minimum, and
+maximum values. Creation and deletion are straightforward
+operations on \texttt{unstructured.Unstructured} objects.
+
+The more interesting case is \texttt{update\_hardware\_profile}, which
+implements a \emph{merge} strategy: it fetches the existing
+profile, iterates over the provided resource entries, and overwrites
+any entry whose resource identifier already exists while appending new
+ones. This means the agent can add a GPU to an existing profile without
+having to re-specify the CPU and memory entries, which makes the tool
+more natural to use through conversational interaction.
+
 \subsection{Notebook Images}
 \label{subsec:image-tools}
+
+\begin{table}[!htbp]
+\caption{Notebook image tools.}
+\label{tab:tools-images}
+\small
+\begin{tabularx}{\textwidth}{lX}
+\toprule
+\textbf{Tool} & \textbf{Description} \\
+\midrule
+\texttt{list\_images}         & List images with versions and dependencies \\
+\texttt{create\_custom\_image} & Register a custom image \textit{(write)} \\
+\texttt{update\_image}         & Update display name or description \textit{(write)} \\
+\texttt{delete\_image}         & Delete with safety checks \textit{(write)} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Notebook images are represented as OpenShift ImageStreams (API group
+\texttt{image.openshift.io/v1}) labelled with
+\texttt{opendatahub.io/notebook-image=true}. The \texttt{list\_images}
+tool reuses the \texttt{GetImages} function from the \texttt{resources}
+package --- the same function that backs the Image Catalog MCP resource
+(Section~\ref{subsec:image-catalog}) --- and formats each image's display
+name, container image URL, and version tags with their Python dependencies
+into a human-readable string. The \texttt{create\_custom\_image} tool
+registers a new ImageStream with a single \texttt{latest} tag, setting
+the labels and annotations required for dashboard visibility. The
+\texttt{update\_image} tool modifies the display name or description
+annotations.
+
+The most notable tool in this group is \texttt{delete\_image}, which
+enforces two safety checks before proceeding. First, it verifies that
+the image is not a default RHOAI image by inspecting the
+\texttt{internal.config.kubernetes.io/previousNamespaces} annotation ---
+default images are managed by the platform and should not be removed by
+users. Second, it scans all workbenches across all namespaces and
+compares the \texttt{opendatahub.io/image-display-name} annotation to
+ensure the image is not currently in use. If either check fails, the
+deletion is rejected with an explanatory error message. These checks prevent accidental removal of images that would leave
+running workbenches in a broken state.
 
 \subsection{Storage and Namespaces}
 \label{subsec:storage-tools}
 
+\begin{table}[!htbp]
+\caption{Storage and infrastructure tools.}
+\label{tab:tools-storage}
+\small
+\begin{tabularx}{\textwidth}{lX}
+\toprule
+\textbf{Tool} & \textbf{Description} \\
+\midrule
+\texttt{list\_pvcs}       & List PVCs in a namespace \\
+\texttt{create\_pvc}      & Create a new PVC \textit{(write)} \\
+\texttt{update\_pvc}      & Resize a PVC (expansion only) \textit{(write)} \\
+\texttt{delete\_pvc}      & Delete a PVC \textit{(write)} \\
+\texttt{list\_namespaces} & List cluster namespaces \textit{(write)} \\
+\texttt{list\_pods}       & List pods in a namespace \textit{(write)} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The \texttt{list\_pvcs} tool (Table~\ref{tab:tools-storage}) lists all
+PVCs in a namespace, and the
+\texttt{list\_namespaces} and \texttt{list\_pods} tools provide basic
+cluster inspection (both registered only in write mode; \texttt{list\_pods}
+is useful for debugging workbench issues such as
+\texttt{CrashLoopBackOff} states).
+
+The \texttt{create\_pvc} tool creates a PVC with the specified name and
+size. The \texttt{update\_pvc} tool handles PVC
+resizing, comparing the requested size with the current size using the
+\texttt{resource.Quantity} type from the Kubernetes API toolkit. If the
+new size is smaller, the update is rejected with an error, since
+Kubernetes does not support shrinking PVCs. The \texttt{delete\_pvc} tool
+removes a PVC by name.
+
 \subsection{Resource Consumption}
 \label{subsec:resource-tools}
+
+\newcommand{\ul}{\char`\_\allowbreak}%
+\begin{table}[!htbp]
+\caption{Resource consumption monitoring tools (all read-only).}
+\label{tab:tools-consumption}
+\small
+\begin{tabularx}{\textwidth}{lX}
+\toprule
+\textbf{Tool} & \textbf{Description} \\
+\midrule
+\texttt{list\ul resource\ul consumption\ul per\ul workbench} & Per-workbench consumption \\
+\texttt{list\ul resource\ul consumption\ul per\ul namespace} & Aggregated per namespace \\
+\texttt{list\ul resource\ul consumption\ul per\ul user}      & Aggregated per user \\
+\texttt{list\ul resource\ul consumption\ul per\ul cluster}   & Aggregated cluster-wide \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Four read-only tools provide resource
+consumption monitoring at different granularities: per workbench, per
+namespace, per user, and cluster-wide. All four report the same four
+resource types --- CPU, memory, disk, and GPU --- and are always available
+regardless of the server mode.
+
+The values these tools report are based on Kubernetes resource
+\emph{requests} declared in the workbench's container spec and the PVC's
+requested storage capacity, not on live metrics. This means they reflect
+what the workbench has \emph{reserved}, which is the relevant quantity for
+capacity planning.
+
+The per-workbench tool simply filters the output of the workbench listing
+logic by name. The three aggregating tools (per-namespace, per-user, and
+cluster-wide) all use a shared \texttt{sumResourceValues} helper that
+parses Kubernetes quantity strings (e.g.\ \texttt{4Gi}, \texttt{500m}),
+accumulates the numeric parts, and preserves the unit from the first
+non-zero value. The per-user tool filters by the
+\texttt{opendatahub.io/username} annotation across all namespaces,
+enabling administrators to answer questions such as \enquote{how many
+resources has user X reserved across the cluster?}
 
 \section{MCP Resources and Prompts}
 \label{sec:resources-prompts}
 
+Beyond tools, the server exposes two MCP resources and one MCP prompt.
+Together with the tools described above, these demonstrate all three
+MCP server primitives in a real-world scenario.
+
+\subsection{Image Catalog Resource}
+\label{subsec:image-catalog}
+
+The Image Catalog is registered with the URI
+\texttt{resource://mcp-server-rhoai/images} and the MIME type
+\texttt{application/json}. When read, it calls the
+\texttt{GetImages} function, which queries all ImageStreams in the default
+RHOAI namespace that carry the \texttt{opendatahub.io/notebook-image=true}
+label. For each image, it extracts the display name from annotations, the
+container image URL from the ImageStream's \texttt{status.dockerImage\-Repository}
+field, and all version tags with their Python dependency and software
+annotations. The result is serialised as a JSON array and returned to the
+host. An agent can read this resource before creating a workbench to
+discover which images are available and select a suitable one.
+
+\subsection{Default Hardware Profile Resource}
+\label{subsec:default-hw-resource}
+
+The Default Hardware Profile is registered with the URI
+\texttt{resource://mcp-server-rhoai/hardware-resources}. Unlike the
+Image Catalog, which queries the cluster dynamically, this resource returns
+a static default profile: 2 CPUs (min 1, max 4) and 4\,GiB of memory
+(min 2\,GiB, max 8\,GiB). This profile is also used as the fallback by
+the \texttt{create\_workbench} tool when no hardware profile is specified
+by the user. The resource gives the agent visibility into the default
+allocation, allowing it to inform the user about the resources a new
+workbench will receive if no explicit profile is provided.
+
+\subsection{Create Workbench Prompt}
+\label{subsec:create-wb-prompt}
+
+The Create Workbench prompt is registered under the name
+\texttt{create-workbench-prompt} with two required arguments:
+\texttt{namespace} and \texttt{name}. When invoked, it returns
+a single user-role message that instructs the agent to consult the Image
+Catalog resource to find a suitable Data Science image (preferring
+Python~3.12) and then call the \texttt{create\_workbench} tool. This
+prompt demonstrates how the three MCP primitives interact in practice: a
+prompt guides the agent to first read a resource (the Image Catalog) and
+then invoke a tool (Create Workbench), orchestrating a multi-step workflow
+through a single user action.
+
 \section{Security}
 \label{sec:security}
+
+Security is addressed at two levels: the two-mode design described in
+Section~\ref{subsec:two-mode}, which prevents accidental cluster
+modifications, and the Kubernetes authentication model.
+
+The server does not implement its own authentication or authorisation.
+Instead, it relies entirely on the user's existing OpenShift credentials.
+Both the typed and dynamic Kubernetes clients are constructed from the
+\texttt{kubeconfig} file at \texttt{\textasciitilde/.kube/config}, which
+stores the token obtained via \texttt{oc login}. Every API call the server
+makes therefore runs with the permissions of the logged-in user; if the user
+does not have permission to, for example, delete workbenches in a certain
+namespace, the Kubernetes API server rejects the request and the error is
+propagated back to the agent.
+
+This delegation model has two advantages. First, it avoids introducing a
+separate credential management system --- the server reuses the same
+authentication flow that platform engineers already use. Second, it ensures
+that the server cannot escalate privileges beyond what the user already has,
+since every API call is subject to the same permission checks that the
+cluster enforces for all users.
+
+The image deletion tool includes additional application-level safety checks. It
+refuses to delete images that are marked as RHOAI defaults (by inspecting
+the \texttt{internal.config.kubernetes.io/previousNamespaces} annotation)
+and images that are currently in use by any workbench (by scanning all
+workbenches across namespaces). These checks prevent accidental removal of
+images that would break existing workbenches.
 
 \section{Code Quality}
 \label{sec:code-quality}
 
+Code quality is maintained through static analysis and unit testing, both
+integrated into the build pipeline.
+
+\subsection{Static Analysis}
+\label{subsec:static-analysis}
+
+The project uses \texttt{golangci-lint} with five enabled linters:
+\texttt{errcheck} (ensures error return values are checked),
+\texttt{govet} (reports suspicious constructs),
+\texttt{ineffassign} (detects ineffectual assignments),
+\texttt{staticcheck} (a suite of advanced static analysis checks), and
+\texttt{unused} (finds unused code). Every build runs
+\texttt{golangci-lint run} as the first stage; if any linter reports an
+issue, the build fails immediately.
+
+\subsection{Unit Testing}
+\label{subsec:unit-testing}
+ ------  TODO:I want to upgrade the implemntation little bit so it might change the text ----
+Unit tests validate tool behaviour against a simulated OpenShift cluster
+without requiring access to a live environment. This is made possible by
+the injectable client design described in
+Section~\ref{subsec:client-strategy}: the \texttt{GetClientSet} and
+\texttt{GetDynamicClient} function variables in the \texttt{tools} package
+(and a separate \texttt{GetDynamicClient} in the \texttt{resources}
+package) are replaced with mock implementations in test code. The mocks
+use \texttt{fake.NewSimpleClientset} from \texttt{client-go} for the typed
+client and \texttt{dynamicfake.NewSimpleDynamicClient} for the dynamic
+client.
+
+Each test follows a three-step pattern: (1)~save the original client
+factory and register a deferred restore, (2)~create fake Kubernetes
+objects and inject a mock client, and (3)~call the tool function under test and
+assert on the output. For example, the \texttt{TestChangeWorkbenchStatus}
+test creates two fake \texttt{Notebook} resources --- one with the
+\texttt{kubeflow-resource-stopped} annotation set (stopped) and one
+without (running) --- and verifies four scenarios: stopping an
+already-stopped workbench returns an \enquote{already stopped} message,
+starting an already-running workbench returns an \enquote{already running}
+message, starting a stopped workbench succeeds, and stopping a running
+workbench succeeds. The test for \texttt{ListImages} creates two fake
+\texttt{ImageStream} resources with display names and version tags, and
+verifies that the formatted output contains the expected image names, URLs,
+and versions. The test for the Image Catalog resource
+(\texttt{TestGetImages}) follows the same approach but tests the
+underlying \texttt{GetImages} function directly.
+
 \section{Evaluation}
 \label{sec:evaluation}
+------  TODO:I want to upgrade the implemntation little bit so it might change the text ----
+End-to-end evaluation uses the Promptfoo framework to measure how well an
+LLM agent uses the MCP server's tools in response to natural-language
+requests. The evaluation is configured in a single YAML file
+(\texttt{promptfoo.yaml}) and can be run with \texttt{make eval}.
+
+\subsection{Evaluation Setup}
+\label{subsec:eval-setup}
+
+Promptfoo connects to the compiled MCP server binary as an MCP provider,
+starting the server with \texttt{MCP\_RHOAI\_MODE=write} so that all tools
+are available. The active provider in the configuration is Google's
+Gemini~2.0~Flash; configurations for OpenAI GPT-4o, GPT-4o-mini, and
+Anthropic Claude~3.5~Sonnet are included as comments, making it
+straightforward to compare tool-calling quality across models.
+
+Each test case consists of a natural-language prompt (the \texttt{prompt}
+variable) and one or more assertions. The assertions use Promptfoo's
+\texttt{tool-call-f1} metric, which checks whether the set of tools the
+model actually called matches the expected set. This metric captures both
+\emph{precision} (the model did not call unnecessary tools) and
+\emph{recall} (the model called all required tools), combining them into
+a single F1 score.
+
+\subsection{Test Cases}
+\label{subsec:eval-cases}
+
+The evaluation suite includes four test cases that exercise different parts
+of the server:
+
+\begin{enumerate}
+  \item \textbf{List all workbenches.} Prompt: \enquote{Show me all
+        workbenches across all namespaces.} Expected tool:
+        \texttt{list\_all\_workbenches}. Tests whether the model picks the
+        cross-namespace variant over the single-namespace one.
+
+  \item \textbf{Resource consumption per namespace.} Prompt: \enquote{What
+        is the resource consumption in test-namespace?} Expected tool:
+        \texttt{list\_resource\_consumption\_per\_namespace}. Tests whether
+        the model correctly identifies the namespace-level consumption tool
+        from the four available granularities.
+
+  \item \textbf{List workbenches in a namespace.} Prompt: \enquote{List
+        workbenches in test-namespace.} Expected tool:
+        \texttt{list\_workbenches}. Tests the single-namespace listing.
+
+  \item \textbf{Create a workbench.} Prompt: \enquote{Create a workbench
+        named my-notebook in namespace test-namespace using Jupyter image.}
+        Expected tool: \texttt{create\_workbench}. Tests whether the model
+        selects the creation tool and extracts the correct parameters.
+\end{enumerate}
+
+A 2-second delay is configured between test cases to avoid API rate
+limiting.
+
+\subsection{Running the Evaluation}
+\label{subsec:eval-running}
+
+The evaluation is invoked via \texttt{make eval}, which runs
+\texttt{npx promptfoo@latest eval -c promptfoo.yaml}. Results are written
+to \texttt{promptfoo-results.json} and can also be explored in a web-based
+dashboard via \texttt{make eval-view}. The YAML-based configuration makes
+it straightforward to add new test cases, switch providers, or adjust
+assertion types as the tool set evolves.
 
 %% ---------------------------------------------------------------------------
 %% Chapter 5 -- Conclusion
