@@ -1384,19 +1384,16 @@ without requiring access to a live environment. This is made possible by
 the injectable client design described in
 Section~\ref{subsec:client-strategy}: the \texttt{GetClientSet} and
 \texttt{GetDynamicClient} function variables in the \texttt{tools} package
-are replaced with fake implementations in test code. The fakes
-use \texttt{fake.NewSimpleClientset} from \texttt{client-go} for the typed
-client and \texttt{dynamicfake.NewSimpleDynamicClient} for the dynamic
-client. Some tools that depend on other tools internally (for example,
-the resource consumption tools call the workbench listing logic) use additional function-level mocks --- package-level function variables
-such as \texttt{listWorkbenchesFn} that are replaced in tests with
-simple functions returning predefined data.
-
-Each test follows a three-step pattern: (1)~save the original client
-factory and register a deferred restore, (2)~create fake Kubernetes
-objects and inject a mock client, and (3)~call the tool function under
-test and assert on the output. The test suite comprises eight test files
-covering every tool domain:
+are replaced with fake implementations in test code. The common setup
+logic is centralised in a shared \texttt{test\_helpers\_test.go} file that exposes
+\texttt{setupFakeClient} and \texttt{setupFakeClientSet} helpers; each
+helper injects a \texttt{client-go} fake into the package-level variable
+and restores the original on cleanup. Some tools that depend on other
+tools internally (for example, the resource consumption tools call the
+workbench listing logic) use additional function-level mocks such as
+\texttt{listWorkbenchesFn} that are replaced in tests with simple
+functions returning predefined data.
+The test suite comprises eight test files covering every tool domain:
 
 \begin{compactitem}
   \item \textbf{Workbenches} --- tests for listing (stopped and running
