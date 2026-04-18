@@ -853,13 +853,10 @@ behave.
         analysis and linting checks, and follow clear package separation.
 
   \item \textbf{NFR-5: Unit testing.} A selected subset of tools must have
-        unit tests that replace the real Kubernetes client with a mock,
-        demonstrating that it is feasible to test MCP tool implementations
-        against a simulated OpenShift cluster without access to a live
-        environment.
+        unit tests.
 
   \item \textbf{NFR-6: Evaluation.} End-to-end agent behaviour must be
-        evaluable through an automated framework that measures tool
+        evaluated using an automated framework that measures tool
         selection accuracy, parameter extraction correctness, and execution
         success rate.
 \end{enumerate}
@@ -1070,14 +1067,14 @@ Errors are propagated back to the host as standard MCP error responses.
 \end{tabularx}
 \end{table}
 
-The workbench management is the most complex part of the server, consisting of
-six tools (Table~\ref{tab:tools-workbench}) that operate on Kubeflow
+Workbench management is the most complex part of the server, comprising
+six tools that operate on Kubeflow
 \texttt{Notebook} resources (API group \texttt{kubeflow.org/v1}) through
 the dynamic Kubernetes client.
 
 \paragraph{Listing.}
 The \texttt{list\_workbenches} tool is the foundation on which several
-other tools are build. For each \texttt{Notebook} resource in the specified
+other tools are built. For each \texttt{Notebook} resource in the specified
 namespace, the tool reads RHOAI-specific annotations to extract the
 image display name, image tag, hardware profile
 name, and owner. Running status is determined by the presence of the
@@ -1225,8 +1222,7 @@ running workbenches in a broken state.
 \end{tabularx}
 \end{table}
 
-The \texttt{list\_pvcs} tool (Table~\ref{tab:tools-storage}) lists all
-PVCs in a namespace, and the
+The \texttt{list\_pvcs} tool lists all PVCs in a namespace, and the
 \texttt{list\_namespaces} and \texttt{list\_pods} tools provide basic
 cluster inspection (both registered only in write mode; \texttt{list\_pods}
 is useful for debugging workbench issues such as
@@ -1321,7 +1317,7 @@ workbench will receive if no explicit profile is provided.
 \label{subsec:create-wb-prompt}
 
 The Create Workbench prompt is registered under the name
-\texttt{create-workbench-prompt} with two required arguments:
+\texttt{create\hbox{-}workbench\hbox{-}prompt} with two required arguments:
 \texttt{namespace} and \texttt{name}. When invoked, it returns
 a single user-role message that instructs the agent to consult the Image
 Catalog resource to find a suitable Data Science image (preferring
@@ -1382,42 +1378,59 @@ issue, the build fails immediately.
 
 \subsection{Unit Testing}
 \label{subsec:unit-testing}
- ------  TODO:I want to upgrade the implemntation little bit so it might change the text ----
+
 Unit tests validate tool behaviour against a simulated OpenShift cluster
 without requiring access to a live environment. This is made possible by
 the injectable client design described in
 Section~\ref{subsec:client-strategy}: the \texttt{GetClientSet} and
 \texttt{GetDynamicClient} function variables in the \texttt{tools} package
-(and a separate \texttt{GetDynamicClient} in the \texttt{resources}
-package) are replaced with mock implementations in test code. The mocks
+are replaced with fake implementations in test code. The fakes
 use \texttt{fake.NewSimpleClientset} from \texttt{client-go} for the typed
 client and \texttt{dynamicfake.NewSimpleDynamicClient} for the dynamic
-client.
+client. Some tools that depend on other tools internally (for example,
+the resource consumption tools call the workbench listing logic) use additional function-level mocks --- package-level function variables
+such as \texttt{listWorkbenchesFn} that are replaced in tests with
+simple functions returning predefined data.
 
 Each test follows a three-step pattern: (1)~save the original client
 factory and register a deferred restore, (2)~create fake Kubernetes
-objects and inject a mock client, and (3)~call the tool function under test and
-assert on the output. For example, the \texttt{TestChangeWorkbenchStatus}
-test creates two fake \texttt{Notebook} resources --- one with the
-\texttt{kubeflow-resource-stopped} annotation set (stopped) and one
-without (running) --- and verifies four scenarios: stopping an
-already-stopped workbench returns an \enquote{already stopped} message,
-starting an already-running workbench returns an \enquote{already running}
-message, starting a stopped workbench succeeds, and stopping a running
-workbench succeeds. The test for \texttt{ListImages} creates two fake
-\texttt{ImageStream} resources with display names and version tags, and
-verifies that the formatted output contains the expected image names, URLs,
-and versions. The test for the Image Catalog resource
-(\texttt{TestGetImages}) follows the same approach but tests the
-underlying \texttt{GetImages} function directly.
+objects and inject a mock client, and (3)~call the tool function under
+test and assert on the output. The test suite comprises eight test files
+covering every tool domain:
+
+\begin{compactitem}
+  \item \textbf{Workbenches} --- tests for listing (stopped and running
+        workbenches), creation (including automatic PVC creation), updates,
+        deletion, and status changes. Pure helper
+        functions such as image tag parsing and resource requirement
+        construction are tested separately.
+  \item \textbf{Hardware profiles} --- CRUD operations and parsing of
+        profile resource identifiers.
+  \item \textbf{Notebook images} --- creation, update, and deletion of
+        custom images, including verification that default images and
+        images in use by workbenches cannot be deleted. The
+        \texttt{ListImages} tool and the underlying \texttt{GetImages}
+        function (which backs the Image Catalog resource) are tested with
+        fake ImageStream objects.
+  \item \textbf{Storage} --- PVC creation, deletion, resize (verifying
+        that shrinking is rejected), and listing.
+  \item \textbf{Namespaces and pods} --- listing with typed client fakes.
+  \item \textbf{Resource consumption} --- the aggregation helpers
+        (\texttt{parseResourceValue}, \texttt{sumResourceValues}) are
+        tested directly, and all four granularity tools are tested
+        with predefined workbench data.
+\end{compactitem}
 
 \section{Evaluation}
 \label{sec:evaluation}
-------  TODO:I want to upgrade the implemntation little bit so it might change the text ----
-End-to-end evaluation uses the Promptfoo framework to measure how well an
-LLM agent uses the MCP server's tools in response to natural-language
-requests. The evaluation is configured in a single YAML file
-(\texttt{promptfoo.yaml}) and can be run with \texttt{make eval}.
+
+End-to-end evaluation uses the Promptfoo
+framework~\parencite{promptfoo} to measure how well an LLM agent uses
+the MCP server's tools in response to natural-language requests.
+Promptfoo was chosen for its simplicity --- the entire evaluation is
+configured in a single YAML file (\texttt{promptfoo.yaml}) with no
+custom evaluation code required, and it can be run with
+\texttt{make eval}.
 
 \subsection{Evaluation Setup}
 \label{subsec:eval-setup}
@@ -1425,7 +1438,7 @@ requests. The evaluation is configured in a single YAML file
 Promptfoo connects to the compiled MCP server binary as an MCP provider,
 starting the server with \texttt{MCP\_RHOAI\_MODE=write} so that all tools
 are available. The active provider in the configuration is Google's
-Gemini~2.0~Flash; configurations for OpenAI GPT-4o, GPT-4o-mini, and
+Gemini~2.5~Pro; configurations for OpenAI GPT-4o, GPT-4o-mini, and
 Anthropic Claude~3.5~Sonnet are included as comments, making it
 straightforward to compare tool-calling quality across models.
 
