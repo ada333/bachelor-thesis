@@ -186,28 +186,28 @@ assistants}. An AI assistant takes a user's message as input and produces a
 textual response. It is fundamentally \textit{stateless} and
 \textit{passive}: it answers questions, drafts documents, and explains
 concepts, but it does not take actions in the world, does not maintain
-persistent memory across sessions by default, and cannot access information
-beyond its training data or the content of the current conversation. This
-passivity is the key limitation that the agentic paradigm, described in the
-next section, overcomes.
+persistent memory across sessions (by default), and cannot access
+information beyond its training data or the content of the current
+conversation. This passivity is the key limitation that the agentic
+paradigm, described in the next section, overcomes.
 
 \section{AI Agents and Tool Use}
 \label{sec:ai-agents}
 
-Despite their impressive capabilities, pure language models are isolated from
+Despite their broad capabilities, pure language models are isolated from
 the external world --- their knowledge does not extend beyond their training
 data, they cannot query other systems, and they cannot take actions. The
 concept of an \textit{AI agent} overcomes these limitations by equipping a
 language model with \textit{tools} --- callable functions that the model can
 invoke to interact with external systems, retrieve fresh information, or
 modify state. Agents can also be given \textit{memory} --- the ability to
-retain information across steps or sessions. This can range from simply
-keeping the full conversation history in the model's context window, to
+retain information across steps or sessions. Memory can range from simply
+keeping the full conversation history in the model's context window to
 reading and writing records in an external database via dedicated memory
 tools.
 
-The key mechanism enabling this is \textit{tool calling} (also referred to
-as \textit{function calling}). When a model is given a set of tool
+The key mechanism enabling agent behaviour is \textit{tool calling} (also
+known as \textit{function calling}). When a model is given a set of tool
 definitions alongside a user request, it can --- instead of producing a plain
 text response --- output a structured call to one of those tools, specifying
 the tool name and the required arguments. The host application intercepts
@@ -236,21 +236,31 @@ standardised way of exposing those capabilities to any AI host.
 \section{The Model Context Protocol}
 \label{sec:mcp}
 
+The Model Context Protocol (MCP) is an open standard that defines how AI
+applications connect to external tools and data sources. This section
+describes the protocol's motivation and architecture
+(Section~\ref{subsec:mcp-overview}), its three main components
+(Section~\ref{subsec:mcp-clients-servers}), the capabilities exposed by
+clients (Section~\ref{subsec:mcp-client-capabilities}) and servers
+(Section~\ref{subsec:mcp-primitives}), and the available transport
+mechanisms (Section~\ref{subsec:mcp-transport}).
+
 \subsection{Protocol Overview}
 \label{subsec:mcp-overview}
 
-The Model Context Protocol (MCP) is an open standard introduced by Anthropic
-in November 2024~\parencite{mcp-announcement} that defines how AI
-applications connect to external tools and data sources. Its core motivation
-is the \textit{M$\times$N integration problem}: without a shared standard,
-connecting $M$ AI hosts to $N$ external services requires up to $M \times N$
-custom integrations, each with its own authentication, serialisation, and
-error-handling logic. MCP reduces this to $M + N$ by providing a single
-protocol that both sides implement once.
+MCP was introduced by Anthropic in November
+2024~\parencite{mcp-announcement} to address a fundamental integration
+challenge. Its core motivation is the \textit{M$\times$N integration
+problem}: without a shared standard, connecting $M$ AI hosts to $N$
+external services requires up to $M \times N$ custom integrations, each
+with its own authentication, serialisation, and error-handling logic. MCP
+reduces this to $M + N$ by providing a single protocol that both sides
+implement once.
 
 The protocol is \textit{transport-agnostic} and message-based, built on top
 of JSON-RPC~2.0~\parencite{jsonrpc-spec}. Official SDKs are available for
-Python, TypeScript, Go, and other languages~\parencite{mcp-github}.
+Python, TypeScript, Go, Java, Kotlin, and
+C\#~\parencite{mcp-github}.
 
 \subsection{MCP Components}
 \label{subsec:mcp-clients-servers}
@@ -389,15 +399,24 @@ deployments~\parencite{mcp-spec}.
 \chapter{Background: Red Hat OpenShift AI and Workbenches}
 \label{chap:rhoai}
 
-This chapter describes the fundamental concepts of Red Hat OpenShift AI and workbenches.
-These concepts are the foundation for the MCP server implementation and architecture
-choices. The sections follow the layered architecture from bottom to
-top: first OpenShift (based on Kubernetes) as the infrastructure layer, then Red Hat
-OpenShift AI (based on Kubeflow) as the machine-learning platform, and finally workbenches (based on Kubeflow notebooks) as the user-facing
-JupyterLab environments.
+This chapter describes the fundamental concepts of Red Hat OpenShift AI
+(RHOAI) and workbenches. These concepts provide the foundation for the MCP
+server implementation and the architecture choices discussed in later
+chapters. The sections follow the layered architecture from bottom to top:
+first OpenShift (based on Kubernetes) as the infrastructure layer
+(Section~\ref{sec:kubernetes}), then RHOAI (based on Kubeflow) as the
+machine-learning platform (Section~\ref{sec:kubeflow-odh-rhoai}), and
+finally workbenches (based on Kubeflow notebooks) as the user-facing
+JupyterLab environments (Section~\ref{sec:notebooks-workbenches}).
 
 \section{Kubernetes and OpenShift}
 \label{sec:kubernetes}
+
+This section introduces the two platform layers that underpin RHOAI:
+Kubernetes as the open-source orchestration engine
+(Subsection~\ref{subsec:kubernetes-arch}), and Red Hat OpenShift as the
+commercial distribution that extends it with enterprise features
+(Subsection~\ref{subsec:openshift}).
 
 \subsection{Kubernetes Architecture}
 \label{subsec:kubernetes-arch}
@@ -415,7 +434,7 @@ thesis.
 \paragraph{Nodes and the control plane.}
 A Kubernetes cluster consists of a \emph{control plane} and a set of worker
 machines called \emph{nodes}. The control plane runs the API server, scheduler,
-and controller manager. They accept user requests, decide where
+and controller manager, which together accept user requests, decide where
 workloads should run, and ensure the desired state is maintained. Each worker
 node runs a \texttt{kubelet} agent that manages the \emph{pods} (the smallest
 deployable units, described below) scheduled on that node and reports status
@@ -437,8 +456,8 @@ querying resource consumption --- is scoped to a namespace.
 
 \paragraph{Persistent Volumes and Persistent Volume Claims.}
 Containers are ephemeral by default: any data written inside a container is lost
-when the pod is terminated. Kubernetes addresses this with a two-layer storage
-abstraction~\parencite{kubernetes-pv}. A \emph{PersistentVolume} (PV)
+when the pod is terminated. To address this limitation, Kubernetes introduces a
+two-layer storage abstraction~\parencite{kubernetes-pv}. A \emph{PersistentVolume} (PV)
 represents a piece of storage provisioned in the cluster. A
 \emph{PersistentVolumeClaim} (PVC) is a user's request for storage; when a PVC
 is created, Kubernetes binds it to a suitable PV. Workbenches mount a
@@ -454,8 +473,8 @@ backed by StatefulSets, which ensures that a user's notebook environment is
 preserved even if the underlying node changes.
 
 \paragraph{Custom Resource Definitions.}
-One of Kubernetes' most powerful extensibility features is the ability to define
-\emph{Custom Resource Definitions}
+Beyond these built-in resources, one of Kubernetes' most powerful extensibility
+features is the ability to define \emph{Custom Resource Definitions}
 (CRDs)~\parencite{kubernetes-crd}. A CRD registers a new resource type with
 the Kubernetes API server, allowing users and operators to manage
 domain-specific objects --- such as machine learning notebooks --- with the same
@@ -466,7 +485,7 @@ the resource that the MCP server creates, updates, and deletes when managing
 workbenches.
 
 \paragraph{Labels and annotations.}
-Kubernetes objects carry two kinds of key-value
+Additionally, Kubernetes objects carry two kinds of key-value
 metadata~\parencite{kubernetes-labels}. \emph{Labels} are used for selection
 and filtering --- for example, RHOAI marks all notebook ImageStreams with the
 label \texttt{opendatahub.io/notebook-image=true} so that they can be
@@ -531,6 +550,16 @@ components, dashboard, and other services that make up the platform.
 
 \section{Kubeflow, Open Data Hub, and Red Hat OpenShift AI}
 \label{sec:kubeflow-odh-rhoai}
+
+This section introduces the software layers that sit on top of OpenShift and
+together provide the machine-learning platform: Kubeflow as the upstream
+open-source framework (Section~\ref{subsec:kubeflow}), Open Data Hub as the
+community project that integrates Kubeflow with OpenShift
+(Section~\ref{subsec:odh}), Red Hat OpenShift AI as its commercial counterpart
+(Section~\ref{subsec:rhoai-platform}), and hardware profiles as the mechanism
+for defining compute-resource constraints
+(Section~\ref{subsec:hardware-profiles}).
+
 \subsection{Kubeflow}
 \label{subsec:kubeflow}
 Kubeflow is an open-source project that aims to make deployments of machine
@@ -549,33 +578,32 @@ to write code. The Notebook CRD, its controller, and its relationship to
 RHOAI workbenches are discussed in detail in
 Section~\ref{sec:notebooks-workbenches}.
 
+\subsection{Open Data Hub}
+\label{subsec:odh}
+
+Open Data Hub (ODH) is an open-source community project that integrates
+upstream Kubeflow components with OpenShift-specific
+features~\parencite{odh-docs}. ODH provides a dashboard, a notebook
+controller, model serving, and pipeline infrastructure --- all deployed as
+Operators on an OpenShift cluster. Many of the custom resource API groups used
+by the MCP server (such as \texttt{opendatahub.io}) originate from ODH.
+The CRDs, labels, and annotations defined by ODH form the foundation on which
+the commercial platform described in the next subsection is built.
+
 \subsection{Red Hat OpenShift AI}
 \label{subsec:rhoai-platform}
 
 Red Hat OpenShift AI (RHOAI) is Red Hat's commercial machine-learning platform
-built on top of OpenShift~\parencite{rhoai-docs}. It is based on Open Data Hub
-(ODH)~\parencite{odh-docs}, a community-driven project that integrates
-upstream Kubeflow components with OpenShift-specific features. RHOAI is
-installed on an OpenShift cluster as an Operator and provides a web-based
-\emph{dashboard} --- a graphical interface from which users can create
-data-science projects, launch and manage workbenches, configure notebook images
-and hardware profiles, and monitor resource consumption without writing any
-YAML or using the command line.
-
-\subsection{Open Data Hub}
-\label{subsec:odh}
-
-Open Data Hub (ODH) is the upstream open-source community project from which
-Red Hat OpenShift AI is derived~\parencite{odh-docs}. ODH provides the same
-core components --- the dashboard, notebook controller, model serving, and
-pipeline infrastructure --- but without the enterprise hardening, certified
-Operators, or commercial support that RHOAI adds. Many of the custom resource
-API groups used by the MCP server (such as \texttt{opendatahub.io}) 
-originate from ODH and are inherited by RHOAI.
-The CRDs, labels, and annotations are largely shared between the two platforms.
-However, the MCP server targets RHOAI specifically because it assumes
-RHOAI-specific defaults such as the \texttt{redhat-ods-applications} namespace
-for discovering hardware profiles.
+derived from Open Data Hub and built on top of
+OpenShift~\parencite{rhoai-docs}. It packages the same core components as ODH
+but adds enterprise hardening, certified Operators, and commercial support.
+RHOAI is installed on an OpenShift cluster as an Operator and provides a
+web-based \emph{dashboard} --- a graphical interface from which users can
+create data-science projects, launch and manage workbenches, configure notebook
+images and hardware profiles, and monitor resource consumption without writing
+any YAML or using the command line. The MCP server targets RHOAI specifically
+because it assumes RHOAI-specific defaults such as the
+\texttt{redhat-ods-applications} namespace for discovering hardware profiles.
 
 \subsection{Hardware Profiles}
 \label{subsec:hardware-profiles}
@@ -1494,8 +1522,59 @@ assertion types as the tool set evolves.
 \chapter{Conclusion}
 \label{chap:conclusion}
 
+This thesis presented the design and implementation of an MCP server for
+Red Hat OpenShift AI workbenches. The server is written in Go using the
+official MCP Go SDK and communicates over the stdio transport, making it
+usable from any MCP-compatible host without host-specific code.
+
+The five goals stated in Section~\ref{sec:motivation} have been met.
+The server provides \textbf{full workbench lifecycle coverage} through
+24~tools spanning five resource domains: workbenches, notebook images,
+hardware profiles, persistent storage, and namespaces with pods.
+\textbf{Resource consumption monitoring} is available at four
+granularities --- per workbench, per namespace, per user, and
+cluster-wide --- giving both data scientists and administrators
+visibility into how compute resources are allocated.
+\textbf{Safety by default} is enforced at the registration level: the
+server starts in read-only mode and only exposes write tools when an
+explicit environment variable is set, so that unregistered tools are
+never advertised to the host. \textbf{Quality assurance} is covered by
+unit tests that use centralised fake-client helpers to validate every
+tool domain against a simulated cluster, and by an automated Promptfoo
+evaluation that measures tool-selection accuracy through F1 scores.
+Finally, the server \textbf{exercises all three MCP primitives} --- tools,
+two resources (Image Catalog and Default Hardware Profile), and a Create
+Workbench prompt --- demonstrating how they can work together in a
+guided workflow.
+
+The implementation targets the current Kubeflow-based workbench
+architecture and serves as a proof of concept for managing
+OpenShift~AI resources through natural language. The
+implications of the upcoming Notebooks~2.0 redesign are discussed in the
+following section.
+
 \section{Future Work: Notebooks 2.0}
 \label{sec:future-work}
+
+The server currently operates on the Kubeflow \texttt{Notebook} CRD
+(API group \texttt{kubeflow.org/v1}) and relies on RHOAI-specific
+annotations for metadata such as image display names, hardware profile
+references, and workbench ownership. Notebooks~2.0, a redesigned
+notebook subsystem, is expected to be integrated into RHOAI later this
+year. The new subsystem will likely introduce a different CRD and API
+surface, which will require updating the server.
+
+Thanks to the clean package separation --- shared types in \texttt{core},
+tool logic in \texttt{tools}, and injectable client variables for
+testability --- the adaptation should be localised. The main changes
+would involve updating the GroupVersionResource constants and the
+annotation keys in \texttt{core/types.go}, adjusting the manifest
+construction and annotation parsing in the \texttt{tools} package, and
+extending the test helpers with the new list kinds. The tool registry,
+the two-mode design, and the MCP-level infrastructure (resources,
+prompts, transport) can remain unchanged. If Notebooks~2.0 introduces
+new resource types or operations, they can be exposed as additional MCP
+tools following the same patterns established in this thesis.
 
 %% ---------------------------------------------------------------------------
 \printbibliography[heading=bibintoc]
