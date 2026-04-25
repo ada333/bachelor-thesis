@@ -55,13 +55,31 @@
     department  = ?,
     author      = Adam David Malý,
     gender      = m,
-    advisor     = {Honza + Martin},
+    advisor     = {Ing. Jan Štourač and RNDr. Martin Ukrop, Ph.D.},
     title       = {Implementation of MCP Server for Red Hat OpenShift AI Workbenches},
     TeXtitle    = {Implementation of MCP Server for Red Hat OpenShift AI Workbenches},
-    keywords    = {MCP, RHOAI, Workbench, Server, Implementation},
-    TeXkeywords = {MCP, RHOAI, Workbench, Server, Implementation},
+    keywords    = {MCP,AI, Agents, RHOAI, Workbench, Server, Kubernetes, Kubeflow},
+    TeXkeywords = {MCP, AI, Agents, RHOAI, Workbench, Server, Kubernetes, Kubeflow},
     abstract    = {
-      This thesis presents MCP server implementation for RHOAI workbenches.
+      Red Hat OpenShift AI is an enterprise machine-learning platform
+      whose workbenches --- containerised development environments for
+      data scientists --- are currently managed either through a web
+      dashboard or by directly manipulating Kubernetes resources. Both
+      approaches are time-consuming or require significant platform
+      expertise. This thesis explores whether workbench management can
+      instead be driven entirely through natural language by connecting
+      an AI agent to the platform via the Model Context Protocol (MCP),
+      an open standard for integrating AI applications with external
+      tools and data sources. The result is an MCP server that lets
+      users create, configure, monitor, and delete workbenches simply
+      by describing what they need to an AI assistant. The server
+      operates in a safe read-only mode by default and is validated
+      through unit tests and automated evaluation of end-to-end agent
+      behaviour. Because the platform is transitioning to a redesigned
+      workbench architecture (Kubeflow Notebooks 2.0), the
+      implementation serves as a proof of concept that demonstrates the
+      feasibility of the approach and establishes patterns for a future
+      production-ready server.
     },
 }
 \usepackage{makeidx}      %% The `makeidx` package contains
@@ -118,7 +136,7 @@ and immediately gain access to the capabilities it exposes. This has already
 led to a growing ecosystem of MCP servers for services ranging from databases
 and file systems to cloud APIs and developer tools.
 
-Red Hat OpenShift AI (RHOAI) is an enterprise machine learning platform
+Red Hat OpenShift AI (RHOAI)~\parencite{rhoai-docs} is an enterprise machine learning platform
 built on top of Red Hat OpenShift (which is based on Kubernetes). One of its
 core features are workbenches --- containerised JupyterLab environments that
 data scientists and engineers use for model training and experimentation.
@@ -129,20 +147,18 @@ eliminate that problem by allowing users to manage their workbenches entirely
 through natural language --- simply describing what they want to an AI agent,
 which then carries out the necessary operations on their behalf.
 
-This thesis presents the design and implementation of an MCP server for
-RHOAI workbenches, written in Go using the official MCP Go
-SDK~\parencite{mcp-github}. The server exposes a comprehensive set of tools
-covering the full lifecycle of workbench management: listing, creating,
-updating, and deleting workbenches; managing notebook images and hardware
-profiles; handling persistent volume claims; querying namespaces and pods;
-and monitoring resource consumption at the workbench, namespace, user, and
-cluster level. A safety-oriented read-only mode is provided by default, with
-write operations gated behind an explicit environment variable. The server
-also exposes MCP resources and a guided prompt to assist agents in
-constructing correct workbench creation requests. Quality is validated
-through unit tests and automated evaluation using the Promptfoo
-framework~\parencite{promptfoo}, which measures tool selection accuracy,
-parameter extraction correctness, and execution success rate.
+To achieve this, the thesis presents the design and implementation of an
+MCP server that connects AI agents to RHOAI. The server covers the full
+workbench management lifecycle --- from creation and configuration to
+monitoring and deletion --- and operates in a safe read-only mode by
+default to prevent accidental modifications. It also explores all three
+capability types that the MCP standard offers (tools, resources, and
+prompts), demonstrating how they can work together in practice.
+Because RHOAI is currently transitioning to a redesigned workbench
+architecture (Kubeflow Notebooks~2.0), the implementation serves as a
+proof of concept: it validates the feasibility of the approach and
+establishes the architectural patterns and evaluation methodology that
+a future production-ready server can build upon.
 
 
 %% ---------------------------------------------------------------------------
@@ -1529,8 +1545,8 @@ usable from any MCP-compatible host without host-specific code.
 
 The five goals stated in Section~\ref{sec:motivation} have been met.
 The server provides \textbf{full workbench lifecycle coverage} through
-24~tools spanning five resource domains: workbenches, notebook images,
-hardware profiles, persistent storage, and namespaces with pods.
+24~tools covering five resource domains: workbenches, notebook images,
+hardware profiles, persistent storage, and namespaces.
 \textbf{Resource consumption monitoring} is available at four
 granularities --- per workbench, per namespace, per user, and
 cluster-wide --- giving both data scientists and administrators
@@ -1544,37 +1560,73 @@ tool domain against a simulated cluster, and by an automated Promptfoo
 evaluation that measures tool-selection accuracy through F1 scores.
 Finally, the server \textbf{exercises all three MCP primitives} --- tools,
 two resources (Image Catalog and Default Hardware Profile), and a Create
-Workbench prompt --- demonstrating how they can work together in a
+Workbench prompt --- demonstrating how they can all work together in a
 guided workflow.
 
-The implementation targets the current Kubeflow-based workbench
-architecture and serves as a proof of concept for managing
-OpenShift~AI resources through natural language. The
-implications of the upcoming Notebooks~2.0 redesign are discussed in the
-following section.
+Because RHOAI is transitioning from the current Kubeflow-based
+workbench architecture to Notebooks~2.0 --- a redesigned notebook
+subsystem described in the following section --- the implementation
+presented in this thesis is best understood as a proof of concept. It
+demonstrates that managing OpenShift~AI workbenches through natural
+language via MCP is both feasible and practical, and establishes the
+architectural patterns, tool design, and evaluation methodology that a
+future production-ready server can build upon. Once Notebooks~2.0 is
+integrated into RHOAI, the server will need to be restructured to
+target the new API surface, but the core design decisions --- the
+two-mode safety model, the package separation, and the MCP-level
+infrastructure --- are independent of the underlying CRD and can be
+carried forward.
 
 \section{Future Work: Notebooks 2.0}
 \label{sec:future-work}
 
-The server currently operates on the Kubeflow \texttt{Notebook} CRD
-(API group \texttt{kubeflow.org/v1}) and relies on RHOAI-specific
-annotations for metadata such as image display names, hardware profile
-references, and workbench ownership. Notebooks~2.0, a redesigned
-notebook subsystem, is expected to be integrated into RHOAI later this
-year. The new subsystem will likely introduce a different CRD and API
-surface, which will require updating the server.
+Kubeflow Notebooks~2.0, officially called \textit{Kubeflow
+Workspaces}~\parencite{notebooks-v2}, is a complete redesign of the
+notebook subsystem that is expected to be integrated into RHOAI later
+this year. The redesign replaces the single
+\texttt{Notebook} CRD (\texttt{kubeflow.org/v1}) with two new custom
+resources under the API group
+\texttt{kubeflow.org/v1beta1}~\parencite{notebooks-v2-design}: a
+namespaced \texttt{Workspace} resource that end users create, and a
+cluster-scoped \texttt{WorkspaceKind} resource that administrators
+define as a template. When creating a \texttt{Workspace}, users
+select a \texttt{WorkspaceKind} (e.g.\ \enquote{jupyterlab},
+\enquote{vs-code}), an approved image configuration, and a pod
+configuration (e.g.\ \enquote{small\_cpu}, \enquote{big\_gpu}) from
+options defined by the administrator in the \texttt{WorkspaceKind};
+they no longer need to specify low-level Kubernetes details such as
+container image URLs, resource requests, or volume mount paths.
+Metadata that the current architecture stores as RHOAI-specific
+annotations --- image display names, hardware profile references,
+workbench ownership, and the stopped/running state --- moves into
+structured spec and status fields. The status model is also richer:
+instead of the current binary running/stopped distinction, a
+\texttt{Workspace} reports one of six states (\texttt{Running},
+\texttt{Paused}, \texttt{Pending}, \texttt{Terminating},
+\texttt{Error}, \texttt{Unknown}). Additional new features include
+built-in activity culling with configurable probes, deferred updates
+that let administrators redirect old image or pod configurations to new
+ones without breaking existing workspaces, and explicit separation of
+home and data volumes in the \texttt{Workspace} spec.
 
-Thanks to the clean package separation --- shared types in \texttt{core},
-tool logic in \texttt{tools}, and injectable client variables for
-testability --- the adaptation should be localised. The main changes
-would involve updating the GroupVersionResource constants and the
-annotation keys in \texttt{core/types.go}, adjusting the manifest
-construction and annotation parsing in the \texttt{tools} package, and
-extending the test helpers with the new list kinds. The tool registry,
-the two-mode design, and the MCP-level infrastructure (resources,
-prompts, transport) can remain unchanged. If Notebooks~2.0 introduces
-new resource types or operations, they can be exposed as additional MCP
-tools following the same patterns established in this thesis.
+Adapting the MCP server to Notebooks~2.0 would require changes in
+three main areas. First, the workbench tools would need to target the
+new \texttt{Workspace} CRD instead of the current \texttt{Notebook}
+CRD --- reading structured spec fields rather than parsing annotations,
+and creating workbenches by referencing \texttt{WorkspaceKind} option
+identifiers rather than constructing full Kubernetes manifests.
+Second, image and hardware profile management would change most
+significantly, because approved images and compute profiles are no
+longer separate resources (ImageStreams and HardwareProfiles) but
+entries defined inside \texttt{WorkspaceKind} objects. Third, the MCP
+resources and the Create Workbench prompt would need to query
+\texttt{WorkspaceKind} resources as their data source. On the other
+hand, the tool registry, the two-mode safety design, the MCP-level
+infrastructure, the evaluation framework, and the overall project
+structure can all remain unchanged. Notebooks~2.0 could also enable
+entirely new MCP tools --- for example, listing available
+\texttt{WorkspaceKind} definitions or querying workspace activity and
+idle status.
 
 %% ---------------------------------------------------------------------------
 \printbibliography[heading=bibintoc]
