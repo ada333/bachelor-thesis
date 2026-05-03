@@ -425,13 +425,7 @@ the MCP server as a child process and communicates with it over the process's
 standard input and standard output streams. Each JSON-RPC message is a
 newline-delimited JSON object. This transport requires no network
 configuration, has no authentication overhead, and is inherently scoped to
-the local machine, making it well-suited for locally-installed tools. The
-server implemented in this thesis uses the stdio transport, initialised in
-the entry point:
-
-\begin{lstlisting}[language=Go]
-server.Run(context.Background(), &mcp.StdioTransport{})
-\end{lstlisting}
+the local machine, making it well-suited for locally-installed tools.
 
 \textbf{HTTP with Server-Sent Events (SSE)} is the remote transport. The
 client sends requests to the server via HTTP POST, and the server delivers
@@ -473,7 +467,7 @@ commercial distribution that extends it with enterprise features
 Kubernetes is an open-source platform for automating the deployment, scaling,
 and management of containerised applications~\parencite{kubernetes-docs}. It
 was originally designed by Google and is now maintained by the Cloud Native
-Computing Foundation (CNCF). Kubernetes provides a declarative configuration
+Computing Foundation (CNCF)~\parencite{cncf}. Kubernetes provides a declarative configuration
 model: users describe the \emph{desired state} of their applications in YAML or
 JSON manifests, and the platform's control loop continuously reconciles the
 actual state of the cluster to match. This section introduces the core Kubernetes
@@ -809,10 +803,10 @@ Kubernetes expertise from the user.
 It is worth noting that the current implementation targets the existing
 Kubeflow-based workbench architecture described in
 Chapter~\ref{chap:rhoai} and is intended as a proof of concept.
-Notebooks~2.0, a redesigned notebook subsystem, is expected to be released
-and integrated into RHOAI later this year. The implications of this
-transition and the changes it will require in the MCP server are discussed
-in Section~\ref{sec:future-work}.
+Notebooks~2.0~\parencite{notebooks-v2}, a redesigned notebook subsystem, is
+expected to be released and integrated into RHOAI later this year. The
+implications of this transition and the changes it will require in the MCP
+server are discussed in Section~\ref{sec:future-work}.
 
 With this motivation in mind, the thesis pursues the following goals:
 
@@ -981,22 +975,39 @@ quality checks pass on every build.
 
 \paragraph{stdio transport.}
 The server uses the stdio transport
-(Section~\ref{subsec:mcp-transport}) exclusively. This choice is driven by
-the deployment model: the MCP server runs as a local process on the same
-machine as the AI host, launched and managed by the host's MCP client
-configuration. The stdio transport requires no network configuration, no
-TLS certificates, and no separate service deployment, which keeps the setup
-minimal. If remote deployment is needed in the future, switching to the
-HTTP/SSE or Streamable HTTP transport would require changing only the
-transport initialisation in the entry point.
+(Section~\ref{subsec:mcp-transport}) exclusively, initialised in the entry
+point as:
+
+\begin{lstlisting}[language=Go]
+server.Run(context.Background(), &mcp.StdioTransport{})
+\end{lstlisting}
+
+This choice reflects the intended deployment model: the MCP server runs as
+a local process on the same machine as the AI host, typically the
+developer's workstation. Although the server communicates with a remote
+Kubernetes cluster (via the user's \texttt{kubeconfig} credentials), the
+MCP protocol itself operates locally between the host application and the
+server. An HTTP/SSE transport would make sense if the MCP server were
+deployed as a shared network service accessed by multiple users, but this
+would introduce additional complexity --- TLS certificates, authentication
+tokens, and service deployment --- without clear benefit for the
+single-user, proof-of-concept scope of this implementation. The stdio
+transport requires no network configuration, is inherently secure (no
+exposed ports), and integrates seamlessly with how MCP hosts such as Cursor
+and Claude Desktop manage local tool servers. If multi-user or remote deployment is needed in the future, switching to
+the HTTP/SSE or Streamable HTTP transport would be straightforward at the
+code level (only the transport initialisation changes), but would also
+require setting up TLS certificates, an authentication layer, and deploying
+the server as a network service.
 
 \paragraph{Promptfoo.}
 End-to-end evaluation uses the Promptfoo
 framework~\parencite{promptfoo}, an open-source tool for testing LLM
-applications. Alternatives such as DeepEval were considered --- DeepEval
-offers over fifty evaluation metrics, including a dedicated
-tool-correctness metric, but that breadth introduces complexity that is
-unnecessary when the only goal is to evaluate tool-calling behaviour.
+applications. Alternatives such as DeepEval~\parencite{deepeval} were
+considered --- DeepEval offers over fifty evaluation metrics, including a
+dedicated tool-correctness metric, but that breadth introduces complexity
+that is unnecessary when the only goal is to evaluate tool-calling
+behaviour.
 Promptfoo is more focused: its entire configuration fits into a single
 YAML file, it requires no custom evaluation code, and it directly supports
 the workflow needed here --- sending natural-language prompts to an LLM,
