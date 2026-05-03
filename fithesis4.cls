@@ -314,6 +314,8 @@
   \long\def\thesis@abstractEn{#1}}
 \thesis@def{advisor}
 \define@key{thesis}{advisor}{\def\thesis@advisor{#1}}
+\thesis@def{consultant}
+\define@key{thesis}{consultant}{\def\thesis@consultant{#1}}
 \long\def\KV@thesis@thanks#1{%
   \long\def\thesis@thanks{#1}}
 \define@key{thesis}{assignment}{%

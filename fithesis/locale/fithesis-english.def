@@ -103,6 +103,7 @@
   \thesis@english@advisorTitle}
 \gdef\thesis@english@fieldTitle{Field of Study}
 \gdef\thesis@english@advisorTitle{Advisor}
+\gdef\thesis@english@consultantTitle{Consultant}
 \gdef\thesis@english@authorTitle{Author}
 \gdef\thesis@english@abstractTitle{Abstract}
 \gdef\thesis@english@keywordsTitle{Keywords}

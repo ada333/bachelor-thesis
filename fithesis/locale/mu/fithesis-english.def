@@ -81,6 +81,7 @@
 \global\let\thesis@english@bib@author\thesis@english@authorTitle
 \gdef\thesis@english@bib@thesisTitle{Title of Thesis}
 \gdef\thesis@english@bib@advisor{Supervisor}
+\gdef\thesis@english@bib@consultant{Consultant}
 \gdef\thesis@english@bib@programme{Degree Programme}
 \global\let\thesis@english@bib@field\thesis@english@fieldTitle
 \gdef\thesis@english@bib@academicYear{Academic Year}

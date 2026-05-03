@@ -75,6 +75,10 @@
     \hfill\thesis@author
     \par\vfill\noindent
     \textbf{\thesis@@{advisorTitle}:} \thesis@advisor
+    \ifx\thesis@consultant\empty\else
+    \par\noindent
+    \textbf{\thesis@@{consultantTitle}:} \thesis@consultant
+    \fi
     \par\vfil
   \end{alwayssingle}}
   %    title page. [TV]}

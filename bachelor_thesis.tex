@@ -52,10 +52,11 @@
     university  = mu,
     faculty     = fi,
     type        = bc,
-    department  = ?,
+    department  = ,
     author      = Adam David Malý,
     gender      = m,
-    advisor     = {Ing. Jan Štourač and RNDr. Martin Ukrop, Ph.D.},
+    advisor     = {RNDr. Martin Ukrop, Ph.D.},
+    consultant  = {Ing. Jan Štourač},
     title       = {Implementation of MCP Server for Red Hat OpenShift AI Workbenches},
     TeXtitle    = {Implementation of MCP Server for Red Hat OpenShift AI Workbenches},
     keywords    = {MCP,AI, Agents, RHOAI, Workbench, Server, Kubernetes, Kubeflow},
@@ -79,7 +80,27 @@
       workbench architecture (Kubeflow Notebooks 2.0), the
       implementation serves as a proof of concept that demonstrates the
       feasibility of the approach and establishes patterns for a future
-      production-ready server.
+      production-ready server. The source code is released as open
+      source under the Apache License 2.0.
+    },
+    declaration = {
+      Hereby I declare that this paper is my original authorial work,
+      which I have worked out on my own. All sources, references, and
+      literature used or excerpted during elaboration of this work are
+      properly cited and listed in complete reference to the due source.
+
+      \medskip
+
+      \noindent The following AI tools were used during the preparation of this thesis:
+      \begin{itemize}
+        \item \textbf{Claude Code} (Anthropic) for assistance with writing
+              and debugging the implementation code.
+        \item \textbf{Claude 4.5 Opus} (Anthropic) for improving grammar,
+              rephrasing, and assistance with styling of the
+              thesis text.
+      \end{itemize}
+      I have reviewed all AI-generated content and take full responsibility
+      for the final text and code presented in this thesis.
     },
 }
 \usepackage{makeidx}      %% The `makeidx` package contains
@@ -119,46 +140,57 @@
 
 Large language models (LLMs) have rapidly evolved in recent years from
 conversational assistants into capable agents that can reason, plan, and take
-actions in the real world. This shift has been made possible by the ability
-to give LLMs access to external \textit{tools} --- functions that let a model
-query a database, call an API, or manage infrastructure, all in response to a
-natural language request. As the need for such integrations grows, a key
-challenge emerges: how do different AI hosts and models connect to the
-ever-expanding set of tools and data sources in a consistent way?
+actions in the real world~\parencite{brown2020gpt3,yao2022react}. This shift
+has been made possible by the ability to give LLMs access to external
+\textit{tools} --- functions that let a model query a database, call an API,
+or manage infrastructure, all in response to a natural language request
+(Chapter~\ref{chap:ai-mcp} describes this agentic paradigm in detail). As
+the need for such integrations grows, a key challenge emerges: how do
+different AI hosts and models connect to the ever-expanding set of tools and
+data sources in a consistent way?
 
 Anthropic introduced the Model Context Protocol (MCP) in November
 2024~\parencite{mcp-announcement} to address exactly this problem. MCP is
 an open standard that defines how AI applications connect to external tools
-and data sources through a client-server architecture. Instead of each AI
-host maintaining its own integrations, any MCP-compatible host
-(Cursor, Claude Desktop, or a custom agent) can connect to any MCP server
-and immediately gain access to the capabilities it exposes. This has already
-led to a growing ecosystem of MCP servers for services ranging from databases
-and file systems to cloud APIs and developer tools.
+and data sources through a client-server architecture (see
+Section~\ref{sec:mcp}). Instead of each AI host maintaining its own
+integrations, any MCP-compatible host (Cursor, Claude Desktop, or a custom
+agent) can connect to any MCP server and immediately gain access to the
+capabilities it exposes. This has already led to a growing ecosystem of MCP
+servers for services ranging from databases and file systems to cloud APIs
+and developer tools.
 
-Red Hat OpenShift AI (RHOAI)~\parencite{rhoai-docs} is an enterprise machine learning platform
-built on top of Red Hat OpenShift (which is based on Kubernetes). One of its
-core features are workbenches --- containerised JupyterLab environments that
-data scientists and engineers use for model training and experimentation.
-Managing clusters with many workbench instances can be a tedious and
-error-prone task, currently requiring navigation of the RHOAI web UI or
-direct manipulation of Kubernetes resources. The goal of this thesis is to
-eliminate that problem by allowing users to manage their workbenches entirely
-through natural language --- simply describing what they want to an AI agent,
-which then carries out the necessary operations on their behalf.
+Red Hat OpenShift AI (RHOAI)~\parencite{rhoai-docs} is an enterprise machine
+learning platform built on top of Red Hat
+OpenShift~\parencite{openshift}, which is based on
+Kubernetes~\parencite{kubernetes-docs}. One of its core features are
+workbenches --- containerised JupyterLab~\parencite{jupyterlab} environments
+that data scientists and engineers use for model training and experimentation
+(Chapter~\ref{chap:rhoai} explains the platform architecture). Managing
+clusters with many workbench instances can be a tedious and error-prone task,
+currently requiring navigation of the RHOAI web UI or direct manipulation of
+Kubernetes resources. The goal of this thesis is to eliminate that problem by
+allowing users to manage their workbenches entirely through natural language
+--- simply describing what they want to an AI agent, which then carries out
+the necessary operations on their behalf.
 
 To achieve this, the thesis presents the design and implementation of an
-MCP server that connects AI agents to RHOAI. The server covers the full
-workbench management lifecycle --- from creation and configuration to
-monitoring and deletion --- and operates in a safe read-only mode by
-default to prevent accidental modifications. It also explores all three
-capability types that the MCP standard offers (tools, resources, and
-prompts), demonstrating how they can work together in practice.
-Because RHOAI is currently transitioning to a redesigned workbench
-architecture (Kubeflow Notebooks~2.0), the implementation serves as a
-proof of concept: it validates the feasibility of the approach and
-establishes the architectural patterns and evaluation methodology that
-a future production-ready server can build upon.
+MCP server that connects AI agents to RHOAI (Chapter~\ref{chap:analysis}
+derives the requirements and architecture; Chapter~\ref{chap:implementation}
+describes the implementation). The server covers the full workbench
+management lifecycle --- from creation and configuration to monitoring and
+deletion --- and operates in a safe read-only mode by default to prevent
+accidental modifications. It also explores all three capability types that
+the MCP standard offers (tools, resources, and prompts), demonstrating how
+they can work together in practice. Because RHOAI is currently transitioning
+to a redesigned workbench architecture
+(Kubeflow Notebooks~2.0~\parencite{notebooks-v2}), the implementation serves
+as a proof of concept: it validates the feasibility of the approach and
+establishes the architectural patterns and evaluation methodology that a
+future production-ready server can build upon
+(Chapter~\ref{chap:conclusion} discusses this future work). The complete
+source code is available as open source under the Apache License~2.0 at
+\url{https://github.com/amaly/mcp-server-rhoai}.
 
 
 %% ---------------------------------------------------------------------------
@@ -196,8 +228,9 @@ reinforcement learning from human feedback
 (RLHF)~\parencite{ouyang2022rlhf}. The result is a model that responds to
 natural-language instructions in a coherent and useful way.
 
-The products of this pipeline --- systems such as OpenAI's ChatGPT, Anthropic's
-Claude, and Google's Gemini --- are commonly referred to as \textit{AI
+The products of this pipeline --- systems such as OpenAI's
+ChatGPT~\parencite{chatgpt}, Anthropic's Claude~\parencite{claude}, and
+Google's Gemini~\parencite{gemini} --- are commonly referred to as \textit{AI
 assistants}. An AI assistant takes a user's message as input and produces a
 textual response. It is fundamentally \textit{stateless} and
 \textit{passive}: it answers questions, drafts documents, and explains
@@ -217,10 +250,10 @@ concept of an \textit{AI agent} overcomes these limitations by equipping a
 language model with \textit{tools} --- callable functions that the model can
 invoke to interact with external systems, retrieve fresh information, or
 modify state. Agents can also be given \textit{memory} --- the ability to
-retain information across steps or sessions. Memory can range from simply
-keeping the full conversation history in the model's context window to
-reading and writing records in an external database via dedicated memory
-tools.
+retain information across steps or sessions~\parencite{zhang2024memory}.
+Memory can range from simply keeping the full conversation history in the
+model's context window to reading and writing records in an external
+database via dedicated memory tools.
 
 The key mechanism enabling agent behaviour is \textit{tool calling} (also
 known as \textit{function calling}). When a model is given a set of tool
@@ -1541,7 +1574,10 @@ assertion types as the tool set evolves.
 This thesis presented the design and implementation of an MCP server for
 Red Hat OpenShift AI workbenches. The server is written in Go using the
 official MCP Go SDK and communicates over the stdio transport, making it
-usable from any MCP-compatible host without host-specific code.
+usable from any MCP-compatible host without host-specific code. The
+complete source code is released as open source under the Apache
+License~2.0 and is available at
+\url{https://github.com/amaly/mcp-server-rhoai}~\parencite{mcp-server-rhoai-repo}.
 
 The five goals stated in Section~\ref{sec:motivation} have been met.
 The server provides \textbf{full workbench lifecycle coverage} through
