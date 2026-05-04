@@ -776,29 +776,20 @@ key technology choices, and presents the architecture of the server.
 \section{Motivation and Goals}
 \label{sec:motivation}
 
-As described in Section~\ref{subsec:current-workflow}, managing RHOAI
-workbenches today requires either navigating the web dashboard or directly
-manipulating Kubernetes resources through the \texttt{oc}/\texttt{kubectl} commands. The
-dashboard is accessible but manual --- performing repetitive tasks such as
-creating or monitoring several workbench instances, or querying resource consumption 
-across the cluster involves
-a time-consuming sequence of clicks with no way to script or automate the
-process. The command-line approach is scriptable but demands deep knowledge of
-the Kubeflow Notebook CRD, the RHOAI-specific annotations described in
-Section~\ref{subsec:rhoai-workbenches}, and extensive knowledge of the platform. In practice,
-this means that only experienced platform engineers can perform workbench
-management tasks efficiently, while data scientists --- the primary users of
-workbenches --- are limited to the dashboard.
+The introduction outlined the core problem: workbench management in RHOAI
+is either manual (dashboard) or requires deep Kubernetes expertise
+(command line). Section~\ref{subsec:current-workflow} described these
+workflows in detail. This thesis proposes an MCP-based solution that lets
+users interact with the cluster through natural language, delegating the
+underlying complexity to an AI agent.
 
-The emergence of the Model Context Protocol offers a third option: expose the
-full workbench management lifecycle as MCP tools and let an AI agent act as
-the intermediary between the user and the cluster. A data scientist can then
-describe what they need in natural language --- \enquote{create three
-workbenches with an image containing PyTorch and pandas, each having 4 CPUs and 16\,GiB of memory} --- and the agent
-selects the correct tool, constructs the parameters, and executes the
-operation. This approach combines the accessibility of the dashboard with the
-power and automation potential of the command line, while requiring no
-Kubernetes expertise from the user.
+As a concrete example, a data scientist could request: \enquote{create three
+workbenches with an image containing PyTorch and pandas, each having 4 CPUs
+and 16\,GiB of memory.} The agent interprets this request, selects the
+appropriate MCP tool, constructs the parameters from the Kubeflow Notebook
+CRD and RHOAI annotations (Section~\ref{subsec:rhoai-workbenches}), and
+executes the operation --- all without the user needing to know how
+workbenches are represented in Kubernetes.
 
 It is worth noting that the current implementation targets the existing
 Kubeflow-based workbench architecture described in
@@ -878,9 +869,9 @@ behave.
         with default, minimum, and maximum values.
 
   \item \textbf{FR-5: Storage management.} The server must provide tools to
-        list persistent volume claims in a namespace, create new PVCs with a
-        given size, and resize existing PVCs (expansion only, as Kubernetes
-        does not support shrinking PVCs).
+        list, create, resize, and delete persistent volume claims (PVCs).
+        Resizing supports expansion only, as Kubernetes does not support
+        shrinking.
 
   \item \textbf{FR-6: Namespace and pod listing.} The server must provide
         tools to list all namespaces in the cluster and to list pods in a
@@ -923,8 +914,8 @@ behave.
   \item \textbf{NFR-4: Code quality.} The codebase must pass static
         analysis and linting checks, and follow clear package separation.
 
-  \item \textbf{NFR-5: Unit testing.} A selected subset of tools must have
-        unit tests.
+  \item \textbf{NFR-5: Unit testing.} All tools must have unit tests
+        covering both success and error paths.
 
   \item \textbf{NFR-6: Evaluation.} End-to-end agent behaviour must be
         evaluated using an automated framework that measures tool
@@ -956,22 +947,34 @@ compatible Python interpreter and manage a virtual environment with the
 correct dependencies installed.
 
 \paragraph{MCP Go SDK.}
-The server uses the official MCP Go SDK~\parencite{mcp-go-sdk} (version 1.1.0)
-for all protocol-level concerns: creating the MCP server instance,
+Given the choice of Go as the implementation language, the server uses the
+official MCP Go SDK~\parencite{mcp-go-sdk} (version 1.1.0) for all
+protocol-level concerns. The alternative would be implementing the MCP
+protocol from scratch, which would require manually handling JSON-RPC
+message parsing, capability negotiation, and JSON Schema generation for
+tool inputs --- a significant effort that would duplicate work already done
+in the official SDK. Using the official SDK also ensures protocol compliance as the
+specification evolves. The SDK handles creating the MCP server instance,
 registering tools with their JSON Schema input definitions (derived
 automatically from Go struct tags), registering resources and prompts, and
-running the stdio transport loop. The SDK's typed tool registration function
+running the transport loop. Its typed tool registration function
 (\texttt{mcp.AddTool}) accepts a Go struct as the input type and
 automatically generates the JSON Schema that is advertised to the host,
-eliminating manual schema maintenance.
+eliminating manual schema maintenance and reducing the risk of
+inconsistencies between the declared schema and the actual implementation.
 
 \paragraph{golangci-lint.}
 Static analysis is performed by
-\texttt{golangci-lint}~\parencite{golangci-lint}, a runner that aggregates
-multiple Go linters into a single invocation. It is integrated into the
-build process through the Makefile: \texttt{make build} runs
-\texttt{golangci-lint run} before compiling the binary, ensuring that code
-quality checks pass on every build.
+\texttt{golangci-lint}~\parencite{golangci-lint}, a tool that runs multiple
+Go linters and aggregates their results into a single invocation. The alternative
+would be running each linter separately (\texttt{go vet}, \texttt{errcheck},
+\texttt{staticcheck}, etc.), which complicates build configuration and
+slows down the feedback loop. \texttt{golangci-lint} is the de facto
+standard in the Go ecosystem: it runs linters in parallel for speed,
+provides a unified configuration format, and is widely adopted by
+open-source Go projects. It is integrated into the build process through
+the Makefile: \texttt{make build} runs \texttt{golangci-lint run} before
+compiling the binary, ensuring that code quality checks pass on every build.
 
 \paragraph{stdio transport.}
 The server uses the stdio transport
@@ -1504,7 +1507,7 @@ The test suite comprises eight test files covering every tool domain:
         (\texttt{parseResourceValue}, \texttt{sumResourceValues}) are
         tested directly, and all four granularity tools are tested
         with predefined workbench data.
-\end{compactitem}
+\end{compactitem} 
 
 \section{Evaluation}
 \label{sec:evaluation}
