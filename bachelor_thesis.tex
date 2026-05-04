@@ -128,7 +128,7 @@
 \usepackage{booktabs}    %% Professional table rules
 \usepackage{tabularx}    %% Full-width tables
 \usepackage[babel]{csquotes} %% Context-sensitive quotation marks
-\usepackage[backend=biber, style=numeric]{biblatex}
+\usepackage[backend=biber, style=iso-numeric, maxbibnames=99, maxcitenames=2]{biblatex}
 \addbibresource{example.bib}
 \begin{document}
 
@@ -856,7 +856,7 @@ behave.
 \label{subsec:functional-req}
 
 \begin{enumerate}
-  \item \textbf{FR-1: Workbench CRUD.} The server must provide tools to
+  \item \textbf{FR-1: Workbench management.} The server must provide tools to
         list, create, update, and delete workbenches. Listing must support
         both a single-namespace and a cross-namespace mode. Each workbench
         entry must include the workbench name, notebook image, hardware profile, and attached
@@ -1489,8 +1489,8 @@ The test suite comprises eight test files covering every tool domain:
         deletion, and status changes. Pure helper
         functions such as image tag parsing and resource requirement
         construction are tested separately.
-  \item \textbf{Hardware profiles} --- CRUD operations and parsing of
-        profile resource identifiers.
+  \item \textbf{Hardware profiles} --- listing, creation, update, deletion,
+        and parsing of profile resource identifiers.
   \item \textbf{Notebook images} --- creation, update, and deletion of
         custom images, including verification that default images and
         images in use by workbenches cannot be deleted. The
