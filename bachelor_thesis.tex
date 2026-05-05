@@ -128,6 +128,8 @@
 \usepackage{booktabs}    %% Professional table rules
 \usepackage{tabularx}    %% Full-width tables
 \usepackage[babel]{csquotes} %% Context-sensitive quotation marks
+\usepackage{tikz}            %% Diagrams
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, fit, backgrounds}
 \usepackage[backend=biber, style=iso-numeric, maxbibnames=99, maxcitenames=2]{biblatex}
 \addbibresource{example.bib}
 \begin{document}
@@ -342,7 +344,65 @@ communicates with the client that is connected to it. This separation of
 roles means that server authors do not need to know anything about which
 LLM or host will use their tools and other capabilities.
 The server-exposed primitives are described in
-Section~\ref{subsec:mcp-primitives}.
+Section~\ref{subsec:mcp-primitives}. Figure~\ref{fig:mcp-architecture}
+illustrates these relationships.
+
+\begin{figure}[htbp]
+\begin{center}
+\begin{tikzpicture}[
+    node distance=0.8cm and 1.2cm,
+    box/.style={rectangle, draw, minimum width=2cm, minimum height=0.8cm, align=center},
+    smallbox/.style={rectangle, draw, minimum width=1.4cm, minimum height=0.6cm, align=center, font=\small},
+    container/.style={rectangle, draw, dashed, inner sep=0.4cm},
+    arrow/.style={-{Stealth[length=2mm]}, thick},
+    biarrow/.style={{Stealth[length=2mm]}-{Stealth[length=2mm]}, thick},
+]
+
+% User
+\node[box] (user) {User};
+
+% Host label above the container
+\node[below=0.6cm of user] (hostlabel) {\textbf{Host}};
+
+% Host container
+\node[container, below=0.1cm of hostlabel, minimum width=7cm, minimum height=2.8cm] (host) {};
+
+% LLM inside host
+\node[box, below=0.3cm of hostlabel] (llm) {LLM};
+
+% Clients inside host
+\node[smallbox, below left=0.6cm and 0.3cm of llm] (client1) {Client};
+\node[smallbox, below right=0.6cm and 0.3cm of llm] (client2) {Client};
+
+% Servers outside host
+\node[box, below=1.5cm of client1] (server1) {Server A};
+\node[box, below=1.5cm of client2] (server2) {Server B};
+
+% Server capabilities
+\node[smallbox, below left=0.5cm and -0.3cm of server1, font=\scriptsize] (tools1) {Tools};
+\node[smallbox, below=0.5cm of server1, font=\scriptsize] (res1) {Resources};
+\node[smallbox, below right=0.5cm and -0.3cm of server1, font=\scriptsize] (prompts1) {Prompts};
+
+\node[smallbox, below=0.5cm of server2, font=\scriptsize] (tools2) {Tools};
+
+% Arrows
+\draw[biarrow] (user) -- (hostlabel);
+\draw[biarrow] (llm) -- (client1);
+\draw[biarrow] (llm) -- (client2);
+\draw[biarrow] (client1) -- node[left, font=\small] {MCP} (server1);
+\draw[biarrow] (client2) -- node[right, font=\small] {MCP} (server2);
+\draw[arrow] (server1) -- (tools1);
+\draw[arrow] (server1) -- (res1);
+\draw[arrow] (server1) -- (prompts1);
+\draw[arrow] (server2) -- (tools2);
+
+\end{tikzpicture}
+\end{center}
+\caption{MCP architecture: a host application contains the LLM and one or
+more clients, each connected to exactly one server via the MCP protocol.
+Servers expose tools, resources, and prompts to the clients.}
+\label{fig:mcp-architecture}
+\end{figure}
 
 \subsection{Client Capabilities}
 \label{subsec:mcp-client-capabilities}
@@ -451,6 +511,41 @@ first OpenShift (based on Kubernetes) as the infrastructure layer
 machine-learning platform (Section~\ref{sec:kubeflow-odh-rhoai}), and
 finally workbenches (based on Kubeflow notebooks) as the user-facing
 JupyterLab environments (Section~\ref{sec:notebooks-workbenches}).
+Figure~\ref{fig:platform-stack} illustrates this layered architecture.
+
+\begin{figure}[htbp]
+\begin{center}
+\begin{tikzpicture}[
+    node distance=0.15cm,
+    layer/.style={rectangle, draw, minimum width=8cm, minimum height=0.9cm, align=center},
+    sublayer/.style={rectangle, draw, minimum width=2.4cm, minimum height=0.7cm, align=center, font=\small},
+]
+
+% Bottom layer - Kubernetes
+\node[layer, fill=blue!10] (k8s) {Kubernetes};
+
+% OpenShift layer
+\node[layer, fill=blue!20, above=of k8s] (ocp) {Red Hat OpenShift};
+
+% Kubeflow / ODH layer
+\node[layer, fill=orange!20, above=of ocp] (kubeflow) {Kubeflow / Open Data Hub};
+
+% RHOAI layer
+\node[layer, fill=red!15, above=of kubeflow] (rhoai) {Red Hat OpenShift AI};
+
+% Top layer - workbench components
+\node[sublayer, fill=red!25, above left=0.35cm and -0.15cm of rhoai] (wb) {Workbenches};
+\node[sublayer, fill=red!25, above=0.35cm of rhoai] (img) {Images};
+\node[sublayer, fill=red!25, above right=0.35cm and -0.15cm of rhoai] (hw) {HW Profiles};
+
+\end{tikzpicture}
+\end{center}
+\caption{The platform stack: Kubernetes provides container orchestration,
+OpenShift adds enterprise features, Kubeflow/ODH provides ML components,
+and RHOAI is the commercial ML platform with workbenches, notebook images,
+and hardware profiles.}
+\label{fig:platform-stack}
+\end{figure}
 
 \section{Kubernetes and OpenShift}
 \label{sec:kubernetes}
@@ -751,11 +846,6 @@ underlying CRDs, annotations, and resource relationships described in this
 chapter. The MCP server implemented in this thesis bridges this gap by exposing
 all workbench management operations as tools that an AI agent can invoke through
 natural language.
-
-\section{MCP Tooling in RHOAI}
-\label{sec:mcp-in-rhoai}
-I think this subchapter is not needed --
-Lets do this subchapter only if there is not enough text in thesis.
 
 %% ---------------------------------------------------------------------------
 %% Chapter 3 -- Analysis and Design
@@ -1158,8 +1248,9 @@ Errors are propagated back to the host as standard MCP error responses.
 \end{tabularx}
 \end{table}
 
+Table~\ref{tab:tools-workbench} lists the six workbench management tools.
 Workbench management is the most complex part of the server, comprising
-six tools that operate on Kubeflow
+tools that operate on Kubeflow
 \texttt{Notebook} resources (API group \texttt{kubeflow.org/v1}) through
 the dynamic Kubernetes client.
 
@@ -1235,7 +1326,8 @@ not lost.
 \end{tabularx}
 \end{table}
 
-Four tools manage hardware profiles (API group
+Table~\ref{tab:tools-hw} lists the four tools that manage hardware profiles
+(API group
 \texttt{infrastructure.opendatahub.io/v1}). The listing tool returns
 each profile's resource identifiers with their default, minimum, and
 maximum values. Creation and deletion are straightforward
@@ -1268,6 +1360,7 @@ more natural to use through conversational interaction.
 \end{tabularx}
 \end{table}
 
+Table~\ref{tab:tools-images} lists the four notebook image tools.
 Notebook images are represented as OpenShift ImageStreams (API group
 \texttt{image.openshift.io/v1}) labelled with
 \texttt{opendatahub.io/notebook-image=true}. The \texttt{list\_images}
@@ -1313,6 +1406,7 @@ running workbenches in a broken state.
 \end{tabularx}
 \end{table}
 
+Table~\ref{tab:tools-storage} lists the storage and infrastructure tools.
 The \texttt{list\_pvcs} tool lists all PVCs in a namespace, and the
 \texttt{list\_namespaces} and \texttt{list\_pods} tools provide basic
 cluster inspection (both registered only in write mode; \texttt{list\_pods}
@@ -1347,8 +1441,8 @@ removes a PVC by name.
 \end{tabularx}
 \end{table}
 
-Four read-only tools provide resource
-consumption monitoring at different granularities: per workbench, per
+Table~\ref{tab:tools-consumption} lists the four read-only tools that provide
+resource consumption monitoring at different granularities: per workbench, per
 namespace, per user, and cluster-wide. All four report the same four
 resource types --- CPU, memory, disk, and GPU --- and are always available
 regardless of the server mode.
@@ -1679,6 +1773,41 @@ entirely new MCP tools --- for example, listing available
 idle status.
 
 %% ---------------------------------------------------------------------------
+%% Attachments
+%% ---------------------------------------------------------------------------
+\chapter*{Attachments}
+\addcontentsline{toc}{chapter}{Attachments}
+\label{chap:attachments}
+
+The electronic attachment accompanying this thesis contains the following:
+
+\begin{description}
+  \item[mcp-server-rhoai/] The complete source code of the MCP server
+        implementation described in Chapter~\ref{chap:implementation}.
+        The directory structure mirrors the project layout described in
+        Section~\ref{subsec:project-structure}, including:
+        \begin{compactitem}
+          \item \texttt{main.go} --- the entry point
+          \item \texttt{core/} --- shared types and Kubernetes client helpers
+          \item \texttt{tools/} --- all 24 MCP tool implementations
+          \item \texttt{resources/} --- MCP resource implementations
+          \item \texttt{prompts/} --- MCP prompt implementation
+          \item \texttt{*\_test.go} --- unit test files
+          \item \texttt{Makefile} --- build and evaluation targets
+          \item \texttt{promptfoo.yaml} --- evaluation configuration
+        \end{compactitem}
+\end{description}
+
+\paragraph{License.}
+The source code is released under the Apache License~2.0, a permissive
+open-source license that allows commercial use, modification, and
+distribution.
+
+\paragraph{Upstream repository.}
+The canonical version of the source code is maintained at
+\url{https://github.com/amaly/mcp-server-rhoai}. The attached version
+corresponds to the state of the repository at the time of thesis submission.
+
 \printbibliography[heading=bibintoc]
 
 \end{document}
