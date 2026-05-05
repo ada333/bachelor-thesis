@@ -129,6 +129,7 @@
 \usepackage{tabularx}    %% Full-width tables
 \usepackage[babel]{csquotes} %% Context-sensitive quotation marks
 \usepackage{tikz}            %% Diagrams
+\emergencystretch=3em        %% Allow slightly looser spacing to avoid overflows
 \usetikzlibrary{shapes.geometric, arrows.meta, positioning, fit, backgrounds}
 \usepackage[backend=biber, style=iso-numeric, maxbibnames=99, maxcitenames=2]{biblatex}
 \addbibresource{example.bib}
@@ -336,8 +337,7 @@ Section~\ref{subsec:mcp-client-capabilities}.
 
 A \textbf{server} is a lightweight process that exposes capabilities (tools, resources, and prompts) to
 clients~\parencite{mcp-spec}. A server typically wraps one specific external system --- a database,
-a cloud API, a file system, or in the case of this thesis, Red Hat OpenShift
-AI workbenches. It contains the actual implementation of each capability.
+a cloud API, a file system, or a cloud platform. It contains the actual implementation of each capability.
 When a tool is invoked, the server executes the corresponding logic and
 returns the result. The server does not communicate with the LLM directly --- it only
 communicates with the client that is connected to it. This separation of
@@ -398,7 +398,7 @@ illustrates these relationships.
 
 \end{tikzpicture}
 \end{center}
-\caption{MCP architecture: a host application contains the LLM and one or
+\caption[MCP architecture]{MCP architecture: a host application contains the LLM and one or
 more clients, each connected to exactly one server via the MCP protocol.
 Servers expose tools, resources, and prompts to the clients.}
 \label{fig:mcp-architecture}
@@ -437,11 +437,7 @@ that describes its input parameters. When the LLM decides that a tool is
 needed to fulfil a request, it emits a structured tool call containing the
 tool name and arguments. The host executes the call via the client and
 returns the result to the model's context. Tools are \textit{model-initiated}
---- it is the LLM that decides when and how to invoke them. This thesis
-implements tools for the full workbench management lifecycle: listing,
-creating, updating, and deleting workbenches, notebook images, hardware
-profiles, persistent volume claims, and namespaces, as well as tools for
-monitoring resource consumption.
+--- it is the LLM that decides when and how to invoke them.
 
 \textbf{Resources} are URI-addressed data that the host can read and inject
 into the model's context. Unlike tools, resources are \textit{host-initiated} ---
@@ -452,21 +448,11 @@ where relevant documents are retrieved and injected into the prompt, MCP
 resources differ in that they are explicitly declared by the server and
 selected by the host or user, rather than retrieved automatically through
 a similarity search.
-This thesis exposes two
-resources: an \textit{Image Catalog}, which lists all notebook images
-available in the cluster with their versions and Python dependencies; and a
-\textit{Default Hardware Profile}, which describes the default CPU and memory
-allocation for new workbenches. An agent can read these resources before
-calling the Create Workbench tool to ensure it selects a valid image and
-reasonable resource limits.
 
 \textbf{Prompts} are pre-defined, parameterisable message templates that
 guide the model's behaviour for a specific task. A prompt can be invoked by
 the user or the host and expands into one or more messages that are injected
-into the conversation. This thesis provides a \textit{Create Workbench}
-prompt that instructs the agent to first consult the Image Catalog resource
-to select a suitable image and then invoke the Create Workbench tool --- a
-pattern that combines all three MCP server primitives in a single guided workflow.
+into the conversation.
 
 \subsection{Transport Mechanisms}
 \label{subsec:mcp-transport}
@@ -540,7 +526,7 @@ Figure~\ref{fig:platform-stack} illustrates this layered architecture.
 
 \end{tikzpicture}
 \end{center}
-\caption{The platform stack: Kubernetes provides container orchestration,
+\caption[The platform stack]{The platform stack: Kubernetes provides container orchestration,
 OpenShift adds enterprise features, Kubeflow/ODH provides ML components,
 and RHOAI is the commercial ML platform with workbenches, notebook images,
 and hardware profiles.}
@@ -566,8 +552,7 @@ Computing Foundation (CNCF)~\parencite{cncf}. Kubernetes provides a declarative 
 model: users describe the \emph{desired state} of their applications in YAML or
 JSON manifests, and the platform's control loop continuously reconciles the
 actual state of the cluster to match. This section introduces the core Kubernetes
-architectural concepts that are relevant to the MCP server implemented in this
-thesis.
+architectural concepts that are relevant to workbench management.
 
 \paragraph{Nodes and the control plane.}
 A Kubernetes cluster consists of a \emph{control plane} and a set of worker
@@ -583,14 +568,12 @@ The smallest deployable unit in Kubernetes is a \emph{pod} --- a group of one
 or more containers that share the same network namespace and
 storage~\parencite{kubernetes-pods}. In practice, most pods contain a single
 application container. Every workbench in Red Hat OpenShift AI runs
-as a pod, and the MCP server lists pods to retrieve workbench uptime.
+as a pod.
 
 \paragraph{Namespaces.}
 Namespaces provide a mechanism for isolating groups of resources within a single
 cluster~\parencite{kubernetes-namespaces}. In the context of Red Hat OpenShift
-AI, each data-science project maps to a Kubernetes namespace. Almost every
-operation exposed by the MCP server --- listing workbenches or pods, creating storage,
-querying resource consumption --- is scoped to a namespace.
+AI, each data-science project maps to a Kubernetes namespace.
 
 \paragraph{Persistent Volumes and Persistent Volume Claims.}
 Containers are ephemeral by default: any data written inside a container is lost
@@ -599,8 +582,7 @@ two-layer storage abstraction~\parencite{kubernetes-pv}. A \emph{PersistentVolum
 represents a piece of storage provisioned in the cluster. A
 \emph{PersistentVolumeClaim} (PVC) is a user's request for storage; when a PVC
 is created, Kubernetes binds it to a suitable PV. Workbenches mount a
-PVC to persist notebooks and data across restarts, and the MCP server provides
-tools to create, resize, and delete PVCs.
+PVC to persist notebooks and data across restarts.
 
 \paragraph{StatefulSets.}
 A \emph{StatefulSet} manages a set of pods with stable network identities and
@@ -618,9 +600,7 @@ the Kubernetes API server, allowing users and operators to manage
 domain-specific objects --- such as machine learning notebooks --- with the same
 tools and workflows used for built-in resources like pods or services. The
 Kubeflow project defines a \texttt{Notebook} CRD (API group
-\texttt{kubeflow.org/v1}) that represents a single notebook environment; this is
-the resource that the MCP server creates, updates, and deletes when managing
-workbenches.
+\texttt{kubeflow.org/v1}) that represents a single notebook environment.
 
 \paragraph{Labels and annotations.}
 Additionally, Kubernetes objects carry two kinds of key-value
@@ -630,10 +610,9 @@ label \texttt{opendatahub.io/notebook-image=true} so that they can be
 distinguished from other ImageStreams in the namespace that are not notebook
 images. \emph{Annotations} store
 non-identifying metadata such as display names, image version hashes, or
-hardware profile references. The MCP server reads and writes annotations
-extensively: workbench status, the selected notebook image, and the hardware
-profile are all stored as annotations on the workbench resource, as described
-in section~\ref{sec:notebooks-workbenches}.
+hardware profile references. In RHOAI, workbench status, the selected notebook
+image, and the hardware profile are all stored as annotations on the workbench
+resource, as described in Section~\ref{sec:notebooks-workbenches}.
 
 \subsection{Red Hat OpenShift}
 \label{subsec:openshift}
@@ -652,8 +631,7 @@ around a Kubernetes namespace that adds default role bindings, network
 policies, and resource quotas~\parencite{openshift-projects}. In practice,
 every OpenShift project maps one-to-one to a namespace, and the terms are often
 used interchangeably. Red Hat OpenShift AI uses projects to represent
-data-science teams; the MCP server operates on these projects through the
-underlying Kubernetes namespace API.
+data-science teams.
 
 \paragraph{ImageStreams.}
 Standard Kubernetes references container images by their full registry URL.
@@ -665,8 +643,7 @@ ImageStream decouples workloads from specific registry URLs: when a new image
 version is pushed, the ImageStream is updated and can automatically trigger
 redeployments. Red Hat OpenShift AI uses ImageStreams (API group
 \texttt{image.openshift.io/v1}) to manage the catalogue of notebook images
-available for workbenches. The MCP server queries and creates ImageStreams when
-listing available images or registering custom notebook images.
+available for workbenches.
 
 \paragraph{Routes and built-in OAuth.}
 OpenShift provides \emph{Routes} as a native mechanism for exposing HTTP and
@@ -710,7 +687,7 @@ Kubeflow Pipelines for orchestrating multi-step training workflows, KServe for
 model serving, Katib for hyperparameter tuning, and Kubeflow Notebooks for
 interactive development environments.
 
-From the perspective of this thesis, the most important Kubeflow component is
+The most important Kubeflow component for workbench management is
 \textbf{Kubeflow Notebooks}, which provides a safe, scalable place for data scientists
 to write code. The Notebook CRD, its controller, and its relationship to
 RHOAI workbenches are discussed in detail in
@@ -723,8 +700,8 @@ Open Data Hub (ODH) is an open-source community project that integrates
 upstream Kubeflow components with OpenShift-specific
 features~\parencite{odh-docs}. ODH provides a dashboard, a notebook
 controller, model serving, and pipeline infrastructure --- all deployed as
-Operators on an OpenShift cluster. Many of the custom resource API groups used
-by the MCP server (such as \texttt{opendatahub.io}) originate from ODH.
+Operators on an OpenShift cluster. Many of the custom resource API groups
+(such as \texttt{opendatahub.io}) originate from ODH.
 The CRDs, labels, and annotations defined by ODH form the foundation on which
 the commercial platform described in the next subsection is built.
 
@@ -739,9 +716,7 @@ RHOAI is installed on an OpenShift cluster as an Operator and provides a
 web-based \emph{dashboard} --- a graphical interface from which users can
 create data-science projects, launch and manage workbenches, configure notebook
 images and hardware profiles, and monitor resource consumption without writing
-any YAML or using the command line. The MCP server targets RHOAI specifically
-because it assumes RHOAI-specific defaults such as the
-\texttt{redhat-ods-applications} namespace for discovering hardware profiles.
+any YAML or using the command line.
 
 \subsection{Hardware Profiles}
 \label{subsec:hardware-profiles}
@@ -757,8 +732,7 @@ profile's resource definitions into Kubernetes resource requests and limits on
 the workbench's pod. Administrators can create hardware profiles to standardise
 the compute tiers available to data scientists (for example, \enquote{Small} with 2
 CPUs and 4\,GiB of memory, or \enquote{GPU Large} with 8 CPUs, 32\,GiB, and one
-NVIDIA GPU). The MCP server provides tools to list, create, update, and delete
-hardware profiles and to attach them to workbenches.
+NVIDIA GPU).
 
 \section{Kubeflow Notebooks and Workbenches}
 \label{sec:notebooks-workbenches}
@@ -786,8 +760,7 @@ The Notebook Controller also handles lifecycle operations. Setting the
 annotation \texttt{kubeflow-resource-stopped} to a timestamp causes the
 controller to scale the StatefulSet to zero replicas, effectively stopping the
 notebook without deleting it. Removing the annotation restarts it. This
-mechanism is how both the RHOAI dashboard and the MCP server start and stop
-workbenches.
+mechanism is how the RHOAI dashboard starts and stops workbenches.
 
 \subsection{RHOAI Workbenches}
 \label{subsec:rhoai-workbenches}
@@ -800,12 +773,12 @@ through the dashboard, it constructs a \texttt{Notebook} manifest with
 RHOAI-specific annotations such as:
 
 \begin{compactitem}
-  \item \texttt{opendatahub.io/image-display-name} --- the human-readable name
+  \item \texttt{opendatahub.io/\allowbreak image-display-name} --- the human-readable name
         of the selected notebook image,
-  \item \texttt{opendatahub.io/hardware-profile-name} --- the hardware profile
+  \item \texttt{opendatahub.io/\allowbreak hardware-profile-name} --- the hardware profile
         governing CPU, memory, and GPU limits,
-  \item \texttt{opendatahub.io/username} --- the owner of the workbench,
-  \item \texttt{notebooks.opendatahub.io/last-image-selection} --- a reference
+  \item \texttt{opendatahub.io/\allowbreak username} --- the owner of the workbench,
+  \item \texttt{notebooks.opendatahub.io/\allowbreak last-image-selection} --- a reference
         to the selected ImageStream tag for upgrade tracking.
 \end{compactitem}
 
@@ -813,10 +786,7 @@ The dashboard then submits this manifest to the Kubernetes API, where the
 Notebook Controller picks it up and creates the running environment. Each
 workbench is backed by a PersistentVolumeClaim that stores the user's data, 
 and is exposed to the user via an OpenShift Route with OAuth
-authentication. The MCP server implemented in this thesis follows the same
-approach: it constructs \texttt{Notebook} manifests with the same annotations
-and submits them to the Kubernetes API, effectively replicating what the
-dashboard does but driven by an AI agent through natural language.
+authentication.
 
 \subsection{Notebook Images}
 \label{subsec:notebook-images}
@@ -829,9 +799,7 @@ represented as an OpenShift ImageStream (see Section~\ref{subsec:openshift})
 with one or more version tags. 
 Custom images --- for example, an image with a development version of a library
 not yet available in the default catalogue --- can be registered through the
-RHOAI dashboard or by creating an ImageStream directly. The MCP server provides
-tools to list (with additional metadata), create, update, and delete notebook
-images.
+RHOAI dashboard or by creating an ImageStream directly.
 
 \subsection{The Current Management Workflow}
 \label{subsec:current-workflow}
@@ -843,9 +811,7 @@ user-friendly but manual: creating, stopping, or reconfiguring multiple
 workbenches is time-consuming. The
 command-line approach is scriptable but requires deep knowledge of the
 underlying CRDs, annotations, and resource relationships described in this
-chapter. The MCP server implemented in this thesis bridges this gap by exposing
-all workbench management operations as tools that an AI agent can invoke through
-natural language.
+chapter.
 
 %% ---------------------------------------------------------------------------
 %% Chapter 3 -- Analysis and Design
@@ -988,7 +954,7 @@ behave.
   \item \textbf{NFR-1: Safety.} The server must start in read-only mode by
         default. Write operations (create, update, delete) must only be
         registered when an explicit environment variable
-        (\texttt{MCP\_RHOAI\_MODE=write}) is set.
+        (\texttt{MCP\_RHOAI\_\allowbreak MODE=write}) is set.
 
   \item \textbf{NFR-2: Host independence.} The server must communicate
         exclusively through the MCP standard and must not contain any
@@ -1260,10 +1226,10 @@ other tools are built. For each \texttt{Notebook} resource in the specified
 namespace, the tool reads RHOAI-specific annotations to extract the
 image display name, image tag, hardware profile
 name, and owner. Running status is determined by the presence of the
-\texttt{kubeflow-resource-stopped} annotation: if set, the workbench is
+\texttt{kubeflow-resource-\allowbreak stopped} annotation: if set, the workbench is
 stopped; otherwise, it is running. For running workbenches, it
 additionally queries the typed client for pods labelled
-\texttt{notebook-name=<workbenchName>} to obtain uptime from the pod's
+\texttt{notebook-name=\allowbreak <workbenchName>} to obtain uptime from the pod's
 start time. Disk usage is read from the PVC's requested storage capacity.
 The result is a list of \texttt{WorkbenchInfo} structs containing the
 workbench name, user, status, image, hardware profile, PVC name, namespace,
@@ -1273,17 +1239,18 @@ namespace string, which in the Kubernetes API returns results across all
 namespaces, giving administrators a cluster-wide view.
 
 \paragraph{Creation.}
-The \texttt{create\_workbench} tool is the most complex in the
-server. It must resolve the user-specified image display name and tag to a
-concrete container image URL by looking up the corresponding ImageStream,
-optionally create a PVC (defaulting to the workbench name and 10\,GiB if
-none is provided), and fall back to the default hardware profile
+The \texttt{create\_workbench} tool is the most complex in the server.
+It
+must resolve the user-specified image display name and tag to a concrete
+container image URL by looking up the corresponding ImageStream, optionally
+create a PVC (defaulting to the workbench name and 10\,GiB if none is
+provided), and fall back to the default hardware profile
 (Section~\ref{sec:resources-prompts}) when no profile is specified. The
-manifest is constructed as an \texttt{unstructured.Unstructured} object
+manifest is constructed as an \texttt{unstructured.\allowbreak Unstructured} object
 with the same annotations the RHOAI dashboard would set ---
-\texttt{opendatahub.io/image-display-name},
-\texttt{notebooks.opendatahub.io/last-image-selection},
-\texttt{opendatahub.io/hardware-profile-name}, among others. The
+\texttt{opendatahub.io/\allowbreak image-display-name} and
+\texttt{notebooks.opendatahub.io/\allowbreak last-image-selection},
+among others. The
 container spec includes JupyterLab server arguments, two volume mounts
 (the user's PVC and a shared-memory \texttt{emptyDir}), and resource
 requests and limits derived from the hardware profile. After submission,
@@ -1328,7 +1295,7 @@ not lost.
 
 Table~\ref{tab:tools-hw} lists the four tools that manage hardware profiles
 (API group
-\texttt{infrastructure.opendatahub.io/v1}). The listing tool returns
+\texttt{infrastructure.opendatahub.io/\allowbreak v1}). The listing tool returns
 each profile's resource identifiers with their default, minimum, and
 maximum values. Creation and deletion are straightforward
 operations on \texttt{unstructured.Unstructured} objects.
@@ -1360,10 +1327,11 @@ more natural to use through conversational interaction.
 \end{tabularx}
 \end{table}
 
+\begin{sloppypar}
 Table~\ref{tab:tools-images} lists the four notebook image tools.
 Notebook images are represented as OpenShift ImageStreams (API group
 \texttt{image.openshift.io/v1}) labelled with
-\texttt{opendatahub.io/notebook-image=true}. The \texttt{list\_images}
+\texttt{opendatahub.io/\allowbreak notebook-image=true}. The \texttt{list\_images}
 tool reuses the \texttt{GetImages} function from the \texttt{resources}
 package --- the same function that backs the Image Catalog MCP resource
 (Section~\ref{subsec:image-catalog}) --- and formats each image's display
@@ -1373,14 +1341,15 @@ registers a new ImageStream with a single \texttt{latest} tag, setting
 the labels and annotations required for dashboard visibility. The
 \texttt{update\_image} tool modifies the display name or description
 annotations.
+\end{sloppypar}
 
 The most notable tool in this group is \texttt{delete\_image}, which
 enforces two safety checks before proceeding. First, it verifies that
 the image is not a default RHOAI image by inspecting the
-\texttt{internal.config.kubernetes.io/previousNamespaces} annotation ---
+\texttt{internal.config.kubernetes.io/\allowbreak previousNamespaces} annotation ---
 default images are managed by the platform and should not be removed by
 users. Second, it scans all workbenches across all namespaces and
-compares the \texttt{opendatahub.io/image-display-name} annotation to
+compares the \texttt{opendatahub.io/\allowbreak image-display-name} annotation to
 ensure the image is not currently in use. If either check fails, the
 deletion is rejected with an explanatory error message. These checks prevent accidental removal of images that would leave
 running workbenches in a broken state.
@@ -1473,23 +1442,26 @@ MCP server primitives in a real-world scenario.
 \subsection{Image Catalog Resource}
 \label{subsec:image-catalog}
 
+\begin{sloppypar}
 The Image Catalog is registered with the URI
-\texttt{resource://mcp-server-rhoai/images} and the MIME type
+\texttt{resource://mcp-server-rhoai/\allowbreak images} and the MIME type
 \texttt{application/json}. When read, it calls the
 \texttt{GetImages} function, which queries all ImageStreams in the default
-RHOAI namespace that carry the \texttt{opendatahub.io/notebook-image=true}
+RHOAI namespace that carry the \texttt{opendatahub.io/\allowbreak notebook-image=true}
 label. For each image, it extracts the display name from annotations, the
-container image URL from the ImageStream's \texttt{status.dockerImage\-Repository}
+container image URL from the ImageStream's \texttt{status.docker\-Image\-Repository}
 field, and all version tags with their Python dependency and software
 annotations. The result is serialised as a JSON array and returned to the
 host. An agent can read this resource before creating a workbench to
 discover which images are available and select a suitable one.
+\end{sloppypar}
 
 \subsection{Default Hardware Profile Resource}
 \label{subsec:default-hw-resource}
 
+\begin{sloppypar}
 The Default Hardware Profile is registered with the URI
-\texttt{resource://mcp-server-rhoai/hardware-resources}. Unlike the
+\texttt{resource://mcp-server-rhoai/\allowbreak hardware-resources}. Unlike the
 Image Catalog, which queries the cluster dynamically, this resource returns
 a static default profile: 2 CPUs (min 1, max 4) and 4\,GiB of memory
 (min 2\,GiB, max 8\,GiB). This profile is also used as the fallback by
@@ -1497,12 +1469,13 @@ the \texttt{create\_workbench} tool when no hardware profile is specified
 by the user. The resource gives the agent visibility into the default
 allocation, allowing it to inform the user about the resources a new
 workbench will receive if no explicit profile is provided.
+\end{sloppypar}
 
 \subsection{Create Workbench Prompt}
 \label{subsec:create-wb-prompt}
 
 The Create Workbench prompt is registered under the name
-\texttt{create\hbox{-}workbench\hbox{-}prompt} with two required arguments:
+\texttt{create-workbench-\allowbreak prompt} with two required arguments:
 \texttt{namespace} and \texttt{name}. When invoked, it returns
 a single user-role message that instructs the agent to consult the Image
 Catalog resource to find a suitable Data Science image (preferring
@@ -1538,7 +1511,7 @@ cluster enforces for all users.
 
 The image deletion tool includes additional application-level safety checks. It
 refuses to delete images that are marked as RHOAI defaults (by inspecting
-the \texttt{internal.config.kubernetes.io/previousNamespaces} annotation)
+the \texttt{internal.config.kubernetes.io/\allowbreak previousNamespaces} annotation)
 and images that are currently in use by any workbench (by scanning all
 workbenches across namespaces). These checks prevent accidental removal of
 images that would break existing workbenches.
@@ -1598,7 +1571,7 @@ The test suite comprises eight test files covering every tool domain:
         that shrinking is rejected), and listing.
   \item \textbf{Namespaces and pods} --- listing with typed client fakes.
   \item \textbf{Resource consumption} --- the aggregation helpers
-        (\texttt{parseResourceValue}, \texttt{sumResourceValues}) are
+        (\texttt{parse\-Resource\-Value}, \texttt{sum\-Resource\-Values}) are
         tested directly, and all four granularity tools are tested
         with predefined workbench data.
 \end{compactitem} 
@@ -1646,7 +1619,7 @@ of the server:
 
   \item \textbf{Resource consumption per namespace.} Prompt: \enquote{What
         is the resource consumption in test-namespace?} Expected tool:
-        \texttt{list\_resource\_consumption\_per\_namespace}. Tests whether
+        \texttt{list\_resource\_consumption\_\allowbreak per\_namespace}. Tests whether
         the model correctly identifies the namespace-level consumption tool
         from the four available granularities.
 
@@ -1666,12 +1639,14 @@ limiting.
 \subsection{Running the Evaluation}
 \label{subsec:eval-running}
 
+\begin{sloppypar}
 The evaluation is invoked via \texttt{make eval}, which runs
 \texttt{npx promptfoo@latest eval -c promptfoo.yaml}. Results are written
 to \texttt{promptfoo-results.json} and can also be explored in a web-based
 dashboard via \texttt{make eval-view}. The YAML-based configuration makes
 it straightforward to add new test cases, switch providers, or adjust
 assertion types as the tool set evolves.
+\end{sloppypar}
 
 %% ---------------------------------------------------------------------------
 %% Chapter 5 -- Conclusion
