@@ -877,10 +877,9 @@ With this motivation in mind, the thesis pursues the following goals:
 
   \item \textbf{Quality assurance.} Validate correctness through unit tests
         and automated evaluation of end-to-end agent behaviour, measuring
-        tool selection accuracy, parameter extraction correctness, and
-        execution success rate. This also serves the proof-of-concept
-        purpose by establishing a methodology for evaluating MCP server
-        implementations.
+        tool selection accuracy and parameter extraction correctness. This
+        also serves the proof-of-concept purpose by establishing a methodology
+        for evaluating MCP server implementations.
 
   \item \textbf{Exploration of all MCP primitives.} Since the
         implementation serves as a proof of concept, exercise the full
@@ -953,8 +952,9 @@ behave.
 \begin{enumerate}
   \item \textbf{NFR-1: Safety.} The server must start in read-only mode by
         default. Write operations (create, update, delete) must only be
-        registered when an explicit environment variable
-        (\texttt{MCP\_RHOAI\_\allowbreak MODE=write}) is set.
+        registered when explicitly enabled via the \texttt{-mode write}
+        command-line flag or the \texttt{MCP\_RHOAI\_\allowbreak MODE=write}
+        environment variable.
 
   \item \textbf{NFR-2: Host independence.} The server must communicate
         exclusively through the MCP standard and must not contain any
@@ -1071,10 +1071,10 @@ Promptfoo is more focused: its entire configuration fits into a single
 YAML file, it requires no custom evaluation code, and it directly supports
 the workflow needed here --- sending natural-language prompts to an LLM,
 capturing the tool calls the model emits, and checking them against
-expected outcomes. It measures tool selection accuracy, parameter
-extraction correctness, and execution success rate. It also supports
-multiple LLM providers (OpenAI, Anthropic, Google), making it
-straightforward to compare tool-calling quality across models.
+expected outcomes. It measures tool selection accuracy and parameter
+extraction correctness. It also supports multiple LLM providers (OpenAI,
+Anthropic, Google), making it straightforward to compare tool-calling
+quality across models.
 
 
 \section{Architecture}
@@ -1120,11 +1120,14 @@ four packages:
 \label{subsec:two-mode}
 
 The server's safety model is implemented at the registration level rather
-than at the execution level. When the server starts, the entry point checks
-the \texttt{MCP\_RHOAI\_MODE} environment variable. If the value is
+than at the execution level. When the server starts, it determines the
+operation mode from two sources: the \texttt{MCP\_RHOAI\_MODE} environment
+variable and the \texttt{-mode} command-line flag. The flag, if provided,
+takes precedence over the environment variable, allowing users to override
+the mode without modifying their shell environment. If the resolved mode is
 \texttt{write}, the server calls \texttt{RegisterWriteTools} followed by
 \texttt{RegisterReadOnlyTools}, making all tools available. For any other
-value (or when the variable is not set), only
+value (or when neither the flag nor the variable is set), only
 \texttt{RegisterReadOnlyTools} is called. Because tools that are not
 registered are never advertised to the host during capability negotiation,
 the LLM cannot invoke them --- it does not know they exist. This approach is
@@ -1579,19 +1582,34 @@ The test suite comprises eight test files covering every tool domain:
 \section{Evaluation}
 \label{sec:evaluation}
 
-End-to-end evaluation uses the Promptfoo
-framework~\parencite{promptfoo} to measure how well an LLM agent uses
-the MCP server's tools in response to natural-language requests.
-Promptfoo was chosen for its simplicity --- the entire evaluation is
-configured in a single YAML file (\texttt{promptfoo.yaml}) with no
-custom evaluation code required, and it can be run with
+Unit tests verify that each tool behaves correctly in isolation, but they
+cannot answer the question that matters most: will an AI agent actually use
+these tools successfully? The value of an MCP server depends entirely on
+whether language models can interpret natural-language requests, select
+appropriate tools, and extract correct parameters from conversational input.
+This makes end-to-end evaluation essential.
+
+Evaluating LLM-based systems presents a fundamental challenge: language models
+are inherently non-deterministic. The same prompt may produce different tool
+calls across runs due to sampling randomness, and minor prompt variations can
+lead to entirely different tool selections. A robust evaluation must therefore
+test a representative set of scenarios and accept that perfect reproducibility
+is not achievable. The goal is to verify that the model \emph{generally}
+selects the right tools and extracts the right parameters, not that it does so
+identically every time.
+
+End-to-end evaluation uses the Promptfoo framework~\parencite{promptfoo} to
+measure how well an LLM agent uses the MCP server's tools in response to
+natural-language requests. Promptfoo was chosen for its simplicity --- the
+entire evaluation is configured in a single YAML file (\texttt{promptfoo.yaml})
+with no custom evaluation code required, and it can be run with
 \texttt{make eval}.
 
 \subsection{Evaluation Setup}
 \label{subsec:eval-setup}
 
 Promptfoo connects to the compiled MCP server binary as an MCP provider,
-starting the server with \texttt{MCP\_RHOAI\_MODE=write} so that all tools
+starting the server with the \texttt{-mode write} flag so that all tools
 are available. The active provider in the configuration is Google's
 Gemini~2.5~Pro; configurations for OpenAI GPT-4o, GPT-4o-mini, and
 Anthropic Claude~3.5~Sonnet are included as comments, making it
@@ -1608,45 +1626,83 @@ a single F1 score.
 \subsection{Test Cases}
 \label{subsec:eval-cases}
 
-The evaluation suite includes four test cases that exercise different parts
-of the server:
+The evaluation suite includes 27~test cases organised into seven categories,
+providing comprehensive coverage of all tool domains:
 
-\begin{enumerate}
-  \item \textbf{List all workbenches.} Prompt: \enquote{Show me all
-        workbenches across all namespaces.} Expected tool:
-        \texttt{list\_all\_workbenches}. Tests whether the model picks the
-        cross-namespace variant over the single-namespace one.
+\begin{compactitem}
+  \item \textbf{Workbench listing} (2~tests) --- listing workbenches
+        cluster-wide and within a specific namespace, verifying that the model
+        selects the appropriate tool variant and extracts namespace parameters.
+  \item \textbf{Workbench CRUD} (5~tests) --- creating, updating, and
+        deleting workbenches, plus starting and stopping them via the status
+        change tool.
+  \item \textbf{Namespaces and pods} (2~tests) --- listing all namespaces
+        and listing pods within a specific namespace.
+  \item \textbf{Notebook images} (5~tests) --- listing available images,
+        creating custom images with name and location, updating image
+        metadata, and deleting images.
+  \item \textbf{Hardware profiles} (4~tests) --- listing, creating,
+        updating, and deleting hardware profiles with resource specifications.
+  \item \textbf{Storage} (3~tests) --- listing PVCs in a namespace,
+        creating a PVC with a specified size, and resizing an existing PVC.
+  \item \textbf{Resource consumption} (6~tests) --- querying consumption
+        at all four granularities (per-workbench, per-namespace, per-user,
+        and cluster-wide), with multiple prompt variations to test robustness.
+\end{compactitem}
 
-  \item \textbf{Resource consumption per namespace.} Prompt: \enquote{What
-        is the resource consumption in test-namespace?} Expected tool:
-        \texttt{list\_resource\_consumption\_\allowbreak per\_namespace}. Tests whether
-        the model correctly identifies the namespace-level consumption tool
-        from the four available granularities.
-
-  \item \textbf{List workbenches in a namespace.} Prompt: \enquote{List
-        workbenches in test-namespace.} Expected tool:
-        \texttt{list\_workbenches}. Tests the single-namespace listing.
-
-  \item \textbf{Create a workbench.} Prompt: \enquote{Create a workbench
-        named my-notebook in namespace test-namespace using Jupyter image.}
-        Expected tool: \texttt{create\_workbench}. Tests whether the model
-        selects the creation tool and extracts the correct parameters.
-\end{enumerate}
-
-A 2-second delay is configured between test cases to avoid API rate
-limiting.
+Each test case verifies both tool selection (via the \texttt{tool-call-f1}
+metric) and parameter extraction (via \texttt{contains} assertions that
+check for expected argument values in the tool call). A~2-second delay is
+configured between test cases to avoid API rate limiting.
 
 \subsection{Running the Evaluation}
 \label{subsec:eval-running}
 
 \begin{sloppypar}
-The evaluation is invoked via \texttt{make eval}, which runs
+The evaluation requires an API key for the configured LLM provider. The
+default configuration uses Google Gemini, so users must set the
+\texttt{GOOGLE\_API\_KEY} environment variable before running. The
+evaluation is then invoked via \texttt{make eval}, which runs
 \texttt{npx promptfoo@latest eval -c promptfoo.yaml}. Results are written
 to \texttt{promptfoo-results.json} and can also be explored in a web-based
 dashboard via \texttt{make eval-view}. The YAML-based configuration makes
 it straightforward to add new test cases, switch providers, or adjust
 assertion types as the tool set evolves.
 \end{sloppypar}
+
+\subsection{Results and Learnings}
+\label{subsec:eval-results}
+
+The evaluation was run using Google Gemini~2.5~Pro as the LLM provider. The
+final test run achieved a 100\% pass rate: all 27~test cases passed, with
+63~individual assertions verified successfully. This result demonstrates that
+the tool names, descriptions, and parameter schemas are sufficiently clear for
+a state-of-the-art language model to select the correct tool and extract the
+required parameters from natural-language requests.
+
+Running the evaluation iteratively during development proved valuable for
+improving tool descriptions. Early runs revealed cases where the model
+selected incorrect tools or failed to extract parameters, which pointed to
+ambiguities in the tool definitions. Several refinements emerged from this
+process:
+
+\begin{compactitem}
+  \item Optional fields must be explicitly marked with \texttt{omitempty} in
+        the Go struct tags, and the JSON schema descriptions should state the
+        default value that will be used when the field is omitted.
+  \item Enumerated values should be listed explicitly in the description ---
+        for example, the \texttt{change\_workbench\_status} tool describes its
+        status parameter as \enquote{0 for running, 1 for stopped} rather than
+        relying on the model to infer the mapping.
+  \item Testing with different models (Gemini~2.5~Pro, Gemini~2.5~Flash,
+        Claude~3.5~Sonnet) exposed robustness issues: simpler models are
+        stricter about parameter formats, making them useful for catching
+        under-specified descriptions that more capable models might tolerate.
+\end{compactitem}
+
+These learnings apply broadly to MCP server development: the evaluation
+framework not only validates correctness but also serves as a feedback loop
+for improving tool usability across different language models.
 
 %% ---------------------------------------------------------------------------
 %% Chapter 5 -- Conclusion
@@ -1671,16 +1727,19 @@ granularities --- per workbench, per namespace, per user, and
 cluster-wide --- giving both data scientists and administrators
 visibility into how compute resources are allocated.
 \textbf{Safety by default} is enforced at the registration level: the
-server starts in read-only mode and only exposes write tools when an
-explicit environment variable is set, so that unregistered tools are
-never advertised to the host. \textbf{Quality assurance} is covered by
-unit tests that use centralised fake-client helpers to validate every
-tool domain against a simulated cluster, and by an automated Promptfoo
-evaluation that measures tool-selection accuracy through F1 scores.
-Finally, the server \textbf{exercises all three MCP primitives} --- tools,
-two resources (Image Catalog and Default Hardware Profile), and a Create
-Workbench prompt --- demonstrating how they can all work together in a
-guided workflow.
+server starts in read-only mode and only exposes write tools when
+explicitly enabled via the \texttt{-mode} command-line flag or an
+environment variable, so that unregistered tools are never advertised to
+the host. \textbf{Quality assurance} is covered by unit tests that use
+centralised fake-client helpers to validate every tool domain against a
+simulated cluster, and by an automated Promptfoo evaluation comprising
+27~test cases that achieved a 100\% pass rate with Gemini~2.5~Pro ---
+verifying both tool selection and parameter extraction. The iterative
+evaluation process also helped refine tool descriptions for better
+cross-model compatibility. Finally, the server \textbf{exercises all three
+MCP primitives} --- tools, two resources (Image Catalog and Default
+Hardware Profile), and a Create Workbench prompt --- demonstrating how
+they can all work together in a guided workflow.
 
 Because RHOAI is transitioning from the current Kubeflow-based
 workbench architecture to Notebooks~2.0 --- a redesigned notebook
