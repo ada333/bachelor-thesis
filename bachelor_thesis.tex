@@ -1642,7 +1642,7 @@ a single F1 score.
 \subsection{Test Cases}
 \label{subsec:eval-cases}
 
-The evaluation suite includes 27~test cases organised into seven categories,
+The evaluation suite includes 22~test cases organised into seven categories,
 providing comprehensive coverage of all tool domains:
 
 \begin{compactitem}
@@ -1652,19 +1652,23 @@ providing comprehensive coverage of all tool domains:
   \item \textbf{Workbench CRUD} (5~tests) --- creating, updating, and
         deleting workbenches, plus starting and stopping them via the status
         change tool.
-  \item \textbf{Namespaces and pods} (2~tests) --- listing all namespaces
-        and listing pods within a specific namespace.
-  \item \textbf{Notebook images} (5~tests) --- listing available images,
-        creating custom images with name and location, updating image
-        metadata, and deleting images.
-  \item \textbf{Hardware profiles} (4~tests) --- listing, creating,
-        updating, and deleting hardware profiles with resource specifications.
+  \item \textbf{Pods} (1~test) --- listing pods within a specific namespace.
+  \item \textbf{Notebook images} (3~tests) --- creating custom images with
+        name and location, updating image metadata, and deleting images.
+  \item \textbf{Hardware profiles} (3~tests) --- creating, updating, and
+        deleting hardware profiles with resource specifications.
   \item \textbf{Storage} (3~tests) --- listing PVCs in a namespace,
         creating a PVC with a specified size, and resizing an existing PVC.
-  \item \textbf{Resource consumption} (6~tests) --- querying consumption
+  \item \textbf{Resource consumption} (5~tests) --- querying consumption
         at all four granularities (per-workbench, per-namespace, per-user,
         and cluster-wide), with multiple prompt variations to test robustness.
 \end{compactitem}
+
+Promptfoo evaluates only tool-calling behaviour; it does not support testing
+MCP resources or prompts. Consequently, the listing operations that are exposed
+as resources (available notebook images, hardware profiles, and namespaces) are
+not covered by this automated evaluation. Their correctness is verified through
+manual testing and unit tests instead.
 
 Each test case verifies both tool selection (via the \texttt{tool-call-f1}
 metric) and parameter extraction (via \texttt{contains} assertions that
@@ -1690,8 +1694,8 @@ assertion types as the tool set evolves.
 \label{subsec:eval-results}
 
 The evaluation was run using Google Gemini~2.5~Pro as the LLM provider. The
-final test run achieved a 100\% pass rate: all 27~test cases passed, with
-63~individual assertions verified successfully. This result demonstrates that
+final test run achieved a 100\% pass rate: all 22~test cases passed, with
+52~individual assertions verified successfully. This result demonstrates that
 the tool names, descriptions, and parameter schemas are sufficiently clear for
 a state-of-the-art language model to select the correct tool and extract the
 required parameters from natural-language requests.
@@ -1749,7 +1753,7 @@ environment variable, so that unregistered tools are never advertised to
 the host. \textbf{Quality assurance} is covered by unit tests that use
 centralised fake-client helpers to validate every tool domain against a
 simulated cluster, and by an automated Promptfoo evaluation comprising
-27~test cases that achieved a 100\% pass rate with Gemini~2.5~Pro ---
+22~test cases that achieved a 100\% pass rate with Gemini~2.5~Pro ---
 verifying both tool selection and parameter extraction. The iterative
 evaluation process also helped refine tool descriptions for better
 cross-model compatibility. Finally, the server \textbf{exercises all three
