@@ -7,7 +7,7 @@ This project is a Masaryk University Faculty of Informatics bachelor's thesis us
 
 ## Implementation Source Code
 
-The thesis describes the implementation found in `/home/amaly/mcp-server-rhoai/`. **Whenever writing about the implementation, always look up the actual source files there first.** The project structure is:
+The thesis describes the implementation found in `/home/amaly/mcp-server-rhoai-workbenches/`. **Whenever writing about the implementation, always look up the actual source files there first.** The project structure is:
 
 - [main.go](mdc:../mcp-server-rhoai/main.go) — entry point and server setup
 - [core/types.go](mdc:../mcp-server-rhoai/core/types.go) — shared types

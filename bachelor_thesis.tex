@@ -884,10 +884,10 @@ With this motivation in mind, the thesis pursues the following goals:
   \item \textbf{Exploration of all MCP primitives.} Since the
         implementation serves as a proof of concept, exercise the full
         breadth of the MCP standard --- not only tools, but also resources
-        and prompts. Specifically, expose MCP resources (an image catalogue
-        and a default hardware profile) and an MCP prompt that orchestrates
-        a guided workbench creation workflow, demonstrating how the three
-        server primitives can work together in practice.
+        and prompts. Specifically, expose MCP resources (an image catalogue,
+        available hardware profiles, and cluster namespaces) and an MCP prompt
+        that orchestrates a guided workbench creation workflow, demonstrating
+        how the three server primitives can work together in practice.
 \end{enumerate}
 
 \section{Requirements}
@@ -1108,9 +1108,9 @@ four packages:
         create, update, and delete tools. The entry point inspects the
         \texttt{MCP\_RHOAI\_MODE} environment variable and calls one or both
         functions accordingly.
-  \item \texttt{resources} --- the implementations of the two MCP
-        resources: the Image Catalog and the Default Hardware Profile.
-        A registry module registers both resources with the MCP server.
+  \item \texttt{resources} --- the implementations of the three MCP
+        resources: the Image Catalog, Hardware Profiles, and Namespaces.
+        A registry module registers all resources with the MCP server.
   \item \texttt{prompts} --- the implementation of the Create Workbench
         MCP prompt, together with a registry module that registers it with
         the MCP server.
@@ -1181,12 +1181,15 @@ practices, and the evaluation methodology.
 \section{MCP Tools}
 \label{sec:tools}
 
-The server exposes 24 MCP tools covering five resource domains. Each
+The server exposes 20 MCP tools covering five resource domains. Each
 subsection below opens with a table listing its tools and then discusses
 the design decisions and non-trivial implementation details. In all
 tables, tools marked \textit{(write)} are only registered when the
 environment variable \texttt{MCP\_RHOAI\_MODE=write} is set; all other
-tools are always available.
+tools are always available. Notably, several listing operations that
+require no parameters (such as listing images, hardware profiles, and
+namespaces) are exposed as MCP resources rather than tools, providing a
+cleaner interface for clients (Section~\ref{sec:resources-prompts}).
 
 Each tool is registered with the MCP server using the SDK's
 \texttt{mcp.AddTool} function, which accepts a \texttt{mcp.Tool}
@@ -1207,8 +1210,7 @@ Errors are propagated back to the host as standard MCP error responses.
 \toprule
 \textbf{Tool} & \textbf{Description} \\
 \midrule
-\texttt{list\_workbenches}        & List workbenches in a namespace \\
-\texttt{list\_all\_workbenches}    & List workbenches across all namespaces \\
+\texttt{list\_workbenches}        & List workbenches (optionally filtered by namespace) \\
 \texttt{create\_workbench}         & Create a new workbench \textit{(write)} \\
 \texttt{update\_workbench}         & Update image, hardware profile, or PVC \textit{(write)} \\
 \texttt{delete\_workbench}         & Delete a workbench \textit{(write)} \\
@@ -1217,7 +1219,7 @@ Errors are propagated back to the host as standard MCP error responses.
 \end{tabularx}
 \end{table}
 
-Table~\ref{tab:tools-workbench} lists the six workbench management tools.
+Table~\ref{tab:tools-workbench} lists the five workbench management tools.
 Workbench management is the most complex part of the server, comprising
 tools that operate on Kubeflow
 \texttt{Notebook} resources (API group \texttt{kubeflow.org/v1}) through
@@ -1236,9 +1238,9 @@ additionally queries the typed client for pods labelled
 start time. Disk usage is read from the PVC's requested storage capacity.
 The result is a list of \texttt{WorkbenchInfo} structs containing the
 workbench name, user, status, image, hardware profile, PVC name, namespace,
-uptime, and resource consumption (CPU, memory, disk, GPU). The
-\texttt{list\_all\_workbenches} tool reuses this logic with an empty
-namespace string, which in the Kubernetes API returns results across all
+uptime, and resource consumption (CPU, memory, disk, GPU). When the
+namespace parameter is empty or not provided, the tool uses an empty
+namespace string in the Kubernetes API call, which returns results across all
 namespaces, giving administrators a cluster-wide view.
 
 \paragraph{Creation.}
@@ -1288,7 +1290,6 @@ not lost.
 \toprule
 \textbf{Tool} & \textbf{Description} \\
 \midrule
-\texttt{list\_hardware\_profiles}    & List all profiles in the RHOAI namespace \\
 \texttt{create\_hardware\_profile}   & Create a new profile \textit{(write)} \\
 \texttt{update\_hardware\_profile}   & Merge-update profile resources \textit{(write)} \\
 \texttt{delete\_hardware\_profile}   & Delete a profile \textit{(write)} \\
@@ -1296,9 +1297,11 @@ not lost.
 \end{tabularx}
 \end{table}
 
-Table~\ref{tab:tools-hw} lists the four tools that manage hardware profiles
+Table~\ref{tab:tools-hw} lists the three tools that manage hardware profiles
 (API group
-\texttt{infrastructure.opendatahub.io/\allowbreak v1}). The listing tool returns
+\texttt{infrastructure.opendatahub.io/\allowbreak v1}). Listing available profiles
+is handled by the Hardware Profiles MCP resource
+(Section~\ref{subsec:hw-profiles-resource}), which returns
 each profile's resource identifiers with their default, minimum, and
 maximum values. Creation and deletion are straightforward
 operations on \texttt{unstructured.Unstructured} objects.
@@ -1322,7 +1325,6 @@ more natural to use through conversational interaction.
 \toprule
 \textbf{Tool} & \textbf{Description} \\
 \midrule
-\texttt{list\_images}         & List images with versions and dependencies \\
 \texttt{create\_custom\_image} & Register a custom image \textit{(write)} \\
 \texttt{update\_image}         & Update display name or description \textit{(write)} \\
 \texttt{delete\_image}         & Delete with safety checks \textit{(write)} \\
@@ -1331,15 +1333,14 @@ more natural to use through conversational interaction.
 \end{table}
 
 \begin{sloppypar}
-Table~\ref{tab:tools-images} lists the four notebook image tools.
+Table~\ref{tab:tools-images} lists the three notebook image tools.
 Notebook images are represented as OpenShift ImageStreams (API group
 \texttt{image.openshift.io/v1}) labelled with
-\texttt{opendatahub.io/\allowbreak notebook-image=true}. The \texttt{list\_images}
-tool reuses the \texttt{GetImages} function from the \texttt{resources}
-package --- the same function that backs the Image Catalog MCP resource
-(Section~\ref{subsec:image-catalog}) --- and formats each image's display
+\texttt{opendatahub.io/\allowbreak notebook-image=true}. Listing available images
+is handled by the Image Catalog MCP resource
+(Section~\ref{subsec:image-catalog}), which formats each image's display
 name, container image URL, and version tags with their Python dependencies
-into a human-readable string. The \texttt{create\_custom\_image} tool
+into a structured JSON response. The \texttt{create\_custom\_image} tool
 registers a new ImageStream with a single \texttt{latest} tag, setting
 the labels and annotations required for dashboard visibility. The
 \texttt{update\_image} tool modifies the display name or description
@@ -1357,7 +1358,7 @@ ensure the image is not currently in use. If either check fails, the
 deletion is rejected with an explanatory error message. These checks prevent accidental removal of images that would leave
 running workbenches in a broken state.
 
-\subsection{Storage and Namespaces}
+\subsection{Storage and Infrastructure}
 \label{subsec:storage-tools}
 
 \begin{table}[!htbp]
@@ -1372,18 +1373,17 @@ running workbenches in a broken state.
 \texttt{create\_pvc}      & Create a new PVC \textit{(write)} \\
 \texttt{update\_pvc}      & Resize a PVC (expansion only) \textit{(write)} \\
 \texttt{delete\_pvc}      & Delete a PVC \textit{(write)} \\
-\texttt{list\_namespaces} & List cluster namespaces \textit{(write)} \\
 \texttt{list\_pods}       & List pods in a namespace \textit{(write)} \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
 Table~\ref{tab:tools-storage} lists the storage and infrastructure tools.
-The \texttt{list\_pvcs} tool lists all PVCs in a namespace, and the
-\texttt{list\_namespaces} and \texttt{list\_pods} tools provide basic
-cluster inspection (both registered only in write mode; \texttt{list\_pods}
-is useful for debugging workbench issues such as
-\texttt{CrashLoopBackOff} states).
+The \texttt{list\_pvcs} tool lists all PVCs in a namespace; listing
+cluster namespaces is handled by the Namespaces MCP resource
+(Section~\ref{subsec:namespaces-resource}). The \texttt{list\_pods} tool
+(registered only in write mode) provides basic cluster inspection, useful
+for debugging workbench issues such as \texttt{CrashLoopBackOff} states.
 
 The \texttt{create\_pvc} tool creates a PVC with the specified name and
 size. The \texttt{update\_pvc} tool handles PVC
@@ -1438,9 +1438,13 @@ resources has user X reserved across the cluster?}
 \section{MCP Resources and Prompts}
 \label{sec:resources-prompts}
 
-Beyond tools, the server exposes two MCP resources and one MCP prompt.
+Beyond tools, the server exposes three MCP resources and one MCP prompt.
 Together with the tools described above, these demonstrate all three
-MCP server primitives in a real-world scenario.
+MCP server primitives in a real-world scenario. Notably, listing operations
+that require no parameters --- images, hardware profiles, and namespaces ---
+are exposed as resources rather than tools. This design follows the MCP
+specification's guidance that resources are appropriate for data that the
+client can read without needing to provide input parameters.
 
 \subsection{Image Catalog Resource}
 \label{subsec:image-catalog}
@@ -1459,19 +1463,31 @@ host. An agent can read this resource before creating a workbench to
 discover which images are available and select a suitable one.
 \end{sloppypar}
 
-\subsection{Default Hardware Profile Resource}
-\label{subsec:default-hw-resource}
+\subsection{Hardware Profiles Resource}
+\label{subsec:hw-profiles-resource}
 
 \begin{sloppypar}
-The Default Hardware Profile is registered with the URI
-\texttt{resource://mcp-server-rhoai/\allowbreak hardware-resources}. Unlike the
-Image Catalog, which queries the cluster dynamically, this resource returns
-a static default profile: 2 CPUs (min 1, max 4) and 4\,GiB of memory
-(min 2\,GiB, max 8\,GiB). This profile is also used as the fallback by
-the \texttt{create\_workbench} tool when no hardware profile is specified
-by the user. The resource gives the agent visibility into the default
-allocation, allowing it to inform the user about the resources a new
-workbench will receive if no explicit profile is provided.
+The Hardware Profiles resource is registered with the URI
+\texttt{resource://mcp-server-rhoai/\allowbreak hardware-profiles} and the MIME type
+\texttt{application/json}. When read, it queries all HardwareProfile custom
+resources in the RHOAI namespace and returns each profile's resource
+identifiers with their default, minimum, and maximum values. This resource
+replaces what was previously a listing tool, providing a cleaner interface
+for clients that simply need to discover available profiles before creating
+or updating a workbench.
+\end{sloppypar}
+
+\subsection{Namespaces Resource}
+\label{subsec:namespaces-resource}
+
+\begin{sloppypar}
+The Namespaces resource is registered with the URI
+\texttt{resource://mcp-server-rhoai/\allowbreak namespaces} and the MIME type
+\texttt{application/json}. When read, it queries the Kubernetes API for all
+namespaces in the cluster and returns them as a JSON array of namespace names.
+This allows an agent to discover available namespaces before performing
+operations that require a namespace parameter, such as creating workbenches
+or listing PVCs.
 \end{sloppypar}
 
 \subsection{Create Workbench Prompt}
@@ -1720,7 +1736,7 @@ License~2.0 and is available at
 
 The five goals stated in Section~\ref{sec:motivation} have been met.
 The server provides \textbf{full workbench lifecycle coverage} through
-24~tools covering five resource domains: workbenches, notebook images,
+20~tools covering five resource domains: workbenches, notebook images,
 hardware profiles, persistent storage, and namespaces.
 \textbf{Resource consumption monitoring} is available at four
 granularities --- per workbench, per namespace, per user, and
@@ -1737,9 +1753,9 @@ simulated cluster, and by an automated Promptfoo evaluation comprising
 verifying both tool selection and parameter extraction. The iterative
 evaluation process also helped refine tool descriptions for better
 cross-model compatibility. Finally, the server \textbf{exercises all three
-MCP primitives} --- tools, two resources (Image Catalog and Default
-Hardware Profile), and a Create Workbench prompt --- demonstrating how
-they can all work together in a guided workflow.
+MCP primitives} --- tools, three resources (Image Catalog, Hardware
+Profiles, and Namespaces), and a Create Workbench prompt --- demonstrating
+how they can all work together in a guided workflow.
 
 Because RHOAI is transitioning from the current Kubeflow-based
 workbench architecture to Notebooks~2.0 --- a redesigned notebook
@@ -1823,7 +1839,7 @@ The electronic attachment accompanying this thesis contains the following:
         \begin{compactitem}
           \item \texttt{main.go} --- the entry point
           \item \texttt{core/} --- shared types and Kubernetes client helpers
-          \item \texttt{tools/} --- all 24 MCP tool implementations
+          \item \texttt{tools/} --- all 20 MCP tool implementations
           \item \texttt{resources/} --- MCP resource implementations
           \item \texttt{prompts/} --- MCP prompt implementation
           \item \texttt{*\_test.go} --- unit test files
