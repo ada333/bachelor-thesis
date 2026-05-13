@@ -134,7 +134,7 @@
 \usepackage[babel]{csquotes} %% Context-sensitive quotation marks
 \usepackage{tikz}            %% Diagrams
 \emergencystretch=3em        %% Allow slightly looser spacing to avoid overflows
-\usetikzlibrary{shapes.geometric, arrows.meta, positioning, fit, backgrounds}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, fit, backgrounds, calc}
 \usepackage[backend=biber, style=iso-numeric, maxbibnames=99, maxcitenames=2]{biblatex}
 \addbibresource{example.bib}
 \begin{document}
@@ -497,18 +497,18 @@ This chapter describes the fundamental concepts of Red Hat OpenShift AI
 server implementation and the architecture choices discussed in later
 chapters. The sections follow the layered architecture from bottom to top:
 first OpenShift (based on Kubernetes) as the infrastructure layer
-(Section~\ref{sec:kubernetes}), then RHOAI (based on Kubeflow) as the
-machine-learning platform (Section~\ref{sec:kubeflow-odh-rhoai}), and
-finally workbenches (based on Kubeflow notebooks) as the user-facing
-JupyterLab environments (Section~\ref{sec:notebooks-workbenches}).
+(Section~\ref{sec:kubernetes}), then RHOAI as the machine-learning platform
+that incorporates Kubeflow components (Section~\ref{sec:kubeflow-odh-rhoai}),
+and finally workbenches (based on the Kubeflow Notebook Controller) as
+the user-facing JupyterLab environments (Section~\ref{sec:notebooks-workbenches}).
 Figure~\ref{fig:platform-stack} illustrates this layered architecture.
 
 \begin{figure}[htbp]
 \begin{center}
 \begin{tikzpicture}[
     node distance=0.15cm,
-    layer/.style={rectangle, draw, minimum width=8cm, minimum height=0.9cm, align=center},
-    sublayer/.style={rectangle, draw, minimum width=2.4cm, minimum height=0.7cm, align=center, font=\small},
+    layer/.style={rectangle, draw, minimum width=6cm, minimum height=0.9cm, align=center},
+    sidebox/.style={rectangle, draw, minimum width=3cm, minimum height=1.5cm, align=center, font=\small},
 ]
 
 % Bottom layer - Kubernetes
@@ -517,23 +517,21 @@ Figure~\ref{fig:platform-stack} illustrates this layered architecture.
 % OpenShift layer
 \node[layer, fill=blue!20, above=of k8s] (ocp) {Red Hat OpenShift};
 
-% Kubeflow / ODH layer
-\node[layer, fill=orange!20, above=of ocp] (kubeflow) {Kubeflow / Open Data Hub};
-
 % RHOAI layer
-\node[layer, fill=red!15, above=of kubeflow] (rhoai) {Red Hat OpenShift AI};
+\node[layer, fill=red!15, above=of ocp] (rhoai) {Red Hat OpenShift AI};
 
-% Top layer - workbench components
-\node[sublayer, fill=red!25, above left=0.35cm and -0.15cm of rhoai] (wb) {Workbenches};
-\node[sublayer, fill=red!25, above=0.35cm of rhoai] (img) {Images};
-\node[sublayer, fill=red!25, above right=0.35cm and -0.15cm of rhoai] (hw) {HW Profiles};
+% Side box for Kubeflow/ODH components
+\node[sidebox, fill=orange!15, right=1.2cm of rhoai] (kf) {Kubeflow / ODH\\components};
+
+% Arrow showing RHOAI uses Kubeflow components
+\draw[-{Stealth}, thick] (kf.west) -- (rhoai.east) node[midway, above, font=\footnotesize] {uses};
 
 \end{tikzpicture}
 \end{center}
 \caption[The platform stack]{The platform stack: Kubernetes provides container orchestration,
-OpenShift adds enterprise features, Kubeflow/ODH provides ML components,
-and RHOAI is the commercial ML platform with workbenches, notebook images,
-and hardware profiles.}
+OpenShift adds enterprise features, and Red Hat OpenShift AI is the commercial
+ML platform that uses Kubeflow and Open Data Hub components (such as the Notebook
+Controller).}
 \label{fig:platform-stack}
 \end{figure}
 
