@@ -1535,6 +1535,22 @@ and images that are currently in use by any workbench (by scanning all
 workbenches across namespaces). These checks prevent accidental removal of
 images that would break existing workbenches.
 
+A broader risk that affects any system connecting an LLM to external data
+is \textit{prompt injection}~\parencite{greshake2023indirect}. In this
+attack, malicious instructions are embedded in data that the LLM
+processes --- for example, in a database field, a document, or MCP tool
+metadata --- causing the model to execute unintended actions. Because
+the server source code is released under an open-source license, users
+can audit the tool definitions and verify that no malicious prompts are
+embedded in the server itself. However, the server cannot prevent
+prompt injection originating from cluster data it retrieves: when
+listing workbenches or namespaces, it returns names and descriptions
+stored in the cluster, and an attacker with cluster access could inject
+malicious text into these fields. Standard Kubernetes access controls
+therefore remain essential, and high-security environments may consider
+deploying an MCP gateway that inspects and sanitises traffic between
+the client and server at runtime.
+
 \section{Code Quality}
 \label{sec:code-quality}
 
