@@ -1627,9 +1627,7 @@ with no custom evaluation code required, and it can be run with
 Promptfoo connects to the compiled MCP server binary as an MCP provider,
 starting the server with the \texttt{-mode write} flag so that all tools
 are available. The active provider in the configuration is Google's
-Gemini~2.5~Pro; configurations for OpenAI GPT-4o, GPT-4o-mini, and
-Anthropic Claude~3.5~Sonnet are included as comments, making it
-straightforward to compare tool-calling quality across models.
+Gemini~2.5~Pro.
 
 Each test case consists of a natural-language prompt (the \texttt{prompt}
 variable) and one or more assertions. The assertions use Promptfoo's
@@ -1694,11 +1692,13 @@ assertion types as the tool set evolves.
 \label{subsec:eval-results}
 
 The evaluation was run using Google Gemini~2.5~Pro as the LLM provider. The
-final test run achieved a 100\% pass rate: all 22~test cases passed, with
-52~individual assertions verified successfully. This result demonstrates that
-the tool names, descriptions, and parameter schemas are sufficiently clear for
-a state-of-the-art language model to select the correct tool and extract the
-required parameters from natural-language requests.
+evaluation was executed multiple times to verify consistency, and every run
+achieved a 100\% pass rate: all 22~test cases passed, with 52~individual
+assertions verified successfully. This consistent result across repeated runs
+demonstrates that the tool names, descriptions, and parameter schemas are
+sufficiently clear for a state-of-the-art language model to reliably select
+the correct tool and extract the required parameters from natural-language
+requests.
 
 Running the evaluation iteratively during development proved valuable for
 improving tool descriptions. Early runs revealed cases where the model
