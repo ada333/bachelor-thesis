@@ -59,8 +59,8 @@
     consultant  = {Ing. Jan Štourač},
     title       = {Implementation of MCP Server for Red Hat OpenShift AI Workbenches},
     TeXtitle    = {Implementation of MCP Server for Red Hat OpenShift AI Workbenches},
-    keywords    = {MCP,AI, Agents, RHOAI, Workbench, Server, Kubernetes, Kubeflow},
-    TeXkeywords = {MCP, AI, Agents, RHOAI, Workbench, Server, Kubernetes, Kubeflow},
+    keywords    = {MCP,AI, Agents, RHOAI, Workbench, Kubernetes, Kubeflow},
+    TeXkeywords = {MCP, AI, Agents, RHOAI, Workbench, Kubernetes, Kubeflow},
     abstract    = {
       Red Hat OpenShift AI is an enterprise machine-learning platform
       whose workbenches --- containerised development environments for
@@ -196,8 +196,7 @@ as a proof of concept: it validates the feasibility of the approach and
 establishes the architectural patterns and evaluation methodology that a
 future production-ready server can build upon
 (Chapter~\ref{chap:conclusion} discusses this future work). The complete
-source code is available as open source under the Apache License~2.0 at
-\url{https://github.com/amaly/mcp-server-rhoai}.
+source code is available as open source under the Apache License~2.0~\parencite{mcp-server-rhoai-repo}.
 
 
 %% ---------------------------------------------------------------------------
@@ -498,41 +497,49 @@ server implementation and the architecture choices discussed in later
 chapters. The sections follow the layered architecture from bottom to top:
 first OpenShift (based on Kubernetes) as the infrastructure layer
 (Section~\ref{sec:kubernetes}), then RHOAI as the machine-learning platform
-that incorporates Kubeflow components (Section~\ref{sec:kubeflow-odh-rhoai}),
-and finally workbenches (based on the Kubeflow Notebook Controller) as
-the user-facing JupyterLab environments (Section~\ref{sec:notebooks-workbenches}).
-Figure~\ref{fig:platform-stack} illustrates this layered architecture.
+that incorporates Kubeflow components (Section~\ref{sec:kubeflow-odh-rhoai}).
+Figure~\ref{fig:platform-stacks} illustrates these relationships. Finally,
+the chapter describes workbenches --- one of RHOAI's core components, based
+on the Kubeflow Notebook Controller --- which provide user-facing JupyterLab
+environments for data scientists (Section~\ref{sec:notebooks-workbenches}).
 
 \begin{figure}[htbp]
 \begin{center}
 \begin{tikzpicture}[
-    node distance=0.15cm,
-    layer/.style={rectangle, draw, minimum width=6cm, minimum height=0.9cm, align=center},
-    sidebox/.style={rectangle, draw, minimum width=3cm, minimum height=1.5cm, align=center, font=\small},
+    node distance=1.2cm,
+    layer/.style={rectangle, draw, minimum width=4.2cm, minimum height=1cm, align=center},
+    arrow/.style={-{Stealth[length=2.5mm]}, thick},
+    arrowlbl/.style={font=\footnotesize, fill=white, inner sep=2pt},
 ]
 
-% Bottom layer - Kubernetes
-\node[layer, fill=blue!10] (k8s) {Kubernetes};
+% === LEFT STACK: Container Platform ===
+\node[layer, fill=blue!15] (k8s) {Kubernetes};
+\node[layer, fill=red!15, above=of k8s] (ocp) {Red Hat OpenShift};
+\node[above=0.5cm of ocp, font=\small\bfseries] {Container Platform};
 
-% OpenShift layer
-\node[layer, fill=blue!20, above=of k8s] (ocp) {Red Hat OpenShift};
+% === RIGHT STACK: ML Platform ===
+\node[layer, fill=blue!15, right=3.5cm of k8s] (kf) {Kubeflow};
+\node[layer, fill=red!15, above=of kf] (rhoai) {Red Hat OpenShift AI};
+\node[above=0.5cm of rhoai, font=\small\bfseries] {ML Platform};
 
-% RHOAI layer
-\node[layer, fill=red!15, above=of ocp] (rhoai) {Red Hat OpenShift AI};
+% === ARROWS ===
+% Vertical arrows (enterprise extends open-source)
+\draw[arrow] (ocp) -- node[arrowlbl, left] {extends} (k8s);
+\draw[arrow] (rhoai) -- node[arrowlbl, right] {extends} (kf);
 
-% Side box for Kubeflow/ODH components
-\node[sidebox, fill=orange!15, right=1.2cm of rhoai] (kf) {Kubeflow / ODH\\components};
-
-% Arrow showing RHOAI uses Kubeflow components
-\draw[-{Stealth}, thick] (kf.west) -- (rhoai.east) node[midway, above, font=\footnotesize] {uses};
+% Horizontal arrows
+\draw[arrow] (kf.west) -- node[arrowlbl, above] {runs on} (k8s.east);
+\draw[arrow] (rhoai.west) -- node[arrowlbl, above] {runs on} (ocp.east);
 
 \end{tikzpicture}
 \end{center}
-\caption[The platform stack]{The platform stack: Kubernetes provides container orchestration,
-OpenShift adds enterprise features, and Red Hat OpenShift AI is the commercial
-ML platform that uses Kubeflow and Open Data Hub components (such as the Notebook
-Controller).}
-\label{fig:platform-stack}
+\caption[The platform stacks]{The platform stacks showing the relationships
+between open-source projects and their enterprise counterparts. Vertical
+arrows show how Red Hat extends the upstream projects with enterprise
+features. Horizontal arrows show runtime dependencies: Kubeflow runs on
+Kubernetes, and RHOAI runs on OpenShift. RHOAI incorporates Kubeflow
+components via the Open Data Hub community project.}
+\label{fig:platform-stacks}
 \end{figure}
 
 \section{Kubernetes and OpenShift}
@@ -621,7 +628,7 @@ resource, as described in Section~\ref{sec:notebooks-workbenches}.
 
 Red Hat OpenShift is a commercial Kubernetes distribution developed by
 Red Hat~\parencite{openshift-docs}. It packages upstream Kubernetes with a
-curated set of additional components and wraps them in enterprise support,
+set of additional components and wraps them in enterprise support,
 certified operators, and a hardened security model. While any standard
 Kubernetes cluster can run containerised workloads, OpenShift adds several
 features that are particularly relevant to the platform stack discussed in this
@@ -632,8 +639,7 @@ OpenShift introduces the concept of a \emph{project}, which is a thin wrapper
 around a Kubernetes namespace that adds default role bindings, network
 policies, and resource quotas~\parencite{openshift-projects}. In practice,
 every OpenShift project maps one-to-one to a namespace, and the terms are often
-used interchangeably. Red Hat OpenShift AI uses projects to represent
-data-science teams.
+used interchangeably.
 
 \paragraph{ImageStreams.}
 Standard Kubernetes references container images by their full registry URL.
@@ -698,12 +704,13 @@ Section~\ref{sec:notebooks-workbenches}.
 \subsection{Open Data Hub}
 \label{subsec:odh}
 
-Open Data Hub (ODH) is an open-source community project that integrates
-upstream Kubeflow components with OpenShift-specific
-features~\parencite{odh-docs}. ODH provides a dashboard, a notebook
-controller, model serving, and pipeline infrastructure --- all deployed as
-Operators on an OpenShift cluster. Many of the custom resource API groups
-(such as \texttt{opendatahub.io}) originate from ODH.
+Open Data Hub (ODH) is an open-source community project that serves as a
+downstream of Kubeflow, adapting its components for
+OpenShift~\parencite{odh-docs}. ODH reuses Kubeflow's deployment tools and
+architecture while adding OpenShift-specific integrations. It provides a
+dashboard, a notebook controller, model serving, and pipeline infrastructure
+--- all deployed as Operators on an OpenShift cluster. Many of the custom
+resource API groups (such as \texttt{opendatahub.io}) originate from ODH.
 The CRDs, labels, and annotations defined by ODH form the foundation on which
 the commercial platform described in the next subsection is built.
 
@@ -793,7 +800,7 @@ authentication.
 \subsection{Notebook Images}
 \label{subsec:notebook-images}
 
-RHOAI ships a curated set of notebook images, each used for a specific
+RHOAI ships a set of notebook images, each used for a specific
 workflow. Examples include images with pre-installed data-science libraries
 (NumPy, pandas, scikit-learn), PyTorch or TensorFlow for deep learning, and
 minimal images for lightweight experimentation and testing. Each image is 
@@ -1753,8 +1760,7 @@ Red Hat OpenShift AI workbenches. The server is written in Go using the
 official MCP Go SDK and communicates over the stdio transport, making it
 usable from any MCP-compatible host without host-specific code. The
 complete source code is released as open source under the Apache
-License~2.0 and is available at
-\url{https://github.com/amaly/mcp-server-rhoai}~\parencite{mcp-server-rhoai-repo}.
+License~2.0~\parencite{mcp-server-rhoai-repo}.
 
 The five goals stated in Section~\ref{sec:motivation} have been met.
 The server provides \textbf{full workbench lifecycle coverage} through
@@ -1878,8 +1884,8 @@ open-source license that allows commercial use, modification, and
 distribution.
 
 \paragraph{Upstream repository.}
-The canonical version of the source code is maintained at
-\url{https://github.com/amaly/mcp-server-rhoai}. The attached version
+The canonical version of the source code is maintained in a public
+GitHub repository~\parencite{mcp-server-rhoai-repo}. The attached version
 corresponds to the state of the repository at the time of thesis submission.
 
 \printbibliography[heading=bibintoc]
