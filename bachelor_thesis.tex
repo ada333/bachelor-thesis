@@ -880,8 +880,8 @@ With this motivation in mind, the thesis pursues the following goals:
 
   \item \textbf{Safety by default.} Operate in a read-only mode by default,
         exposing only listing and querying tools. Write operations ---
-        creation, modification, and deletion --- are gated behind an explicit
-        opt-in mechanism so that users can explore the server's capabilities
+        creation, modification, and deletion --- are hidden behind an explicit
+        enablement so that users can explore the server's capabilities
         without risk of accidental modifications to the cluster.
 
   \item \textbf{Quality assurance.} Validate correctness through unit tests
@@ -1097,12 +1097,25 @@ built.
 \subsection{Project Structure}
 \label{subsec:project-structure}
 
-The project root contains two key files: \texttt{main.go}, which is the
-entry point that creates the MCP server instance, registers tools,
-resources, and prompts, and starts the stdio transport loop; and a
-\texttt{Makefile} that drives the build pipeline described in
-Section~\ref{subsec:build-pipeline}. The remaining code is organised into
-four packages:
+The project root contains the following key files:
+
+\begin{compactitem}
+  \item \texttt{main.go} --- the entry point that creates the MCP server
+        instance, registers tools, resources, and prompts, and starts the
+        stdio transport loop.
+  \item \texttt{Makefile} --- drives the build pipeline described in
+        Section~\ref{subsec:build-pipeline}.
+  \item \texttt{.golangci.yml} --- configuration for the golangci-lint
+        static analysis tool.
+  \item \texttt{promptfoo.yaml} --- defines the evaluation test suite used
+        to measure tool selection accuracy
+        (Section~\ref{sec:evaluation}).
+  \item \texttt{.github/workflows/ci.yml} --- GitHub Actions workflow that
+        runs linting and unit tests on every push and pull request,
+        ensuring continuous integration.
+\end{compactitem}
+
+The source code is organised into four packages:
 
 \begin{compactitem}
   \item \texttt{core} --- shared type definitions (input/output structs for
