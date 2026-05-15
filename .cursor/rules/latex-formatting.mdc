@@ -9,25 +9,25 @@ This project is a Masaryk University Faculty of Informatics bachelor's thesis us
 
 The thesis describes the implementation found in `/home/amaly/mcp-server-rhoai-workbenches/`. **Whenever writing about the implementation, always look up the actual source files there first.** The project structure is:
 
-- [main.go](mdc:../mcp-server-rhoai/main.go) — entry point and server setup
-- [core/types.go](mdc:../mcp-server-rhoai/core/types.go) — shared types
-- [core/logging.go](mdc:../mcp-server-rhoai/core/logging.go) — logging setup
-- [tools/workbench_tools.go](mdc:../mcp-server-rhoai/tools/workbench_tools.go) — workbench create/list/delete/status tools
-- [tools/hardware_profile_tools.go](mdc:../mcp-server-rhoai/tools/hardware_profile_tools.go) — hardware profile tools
-- [tools/image_tools.go](mdc:../mcp-server-rhoai/tools/image_tools.go) — notebook image tools
-- [tools/namespace_tools.go](mdc:../mcp-server-rhoai/tools/namespace_tools.go) — namespace tools
-- [tools/pod_tools.go](mdc:../mcp-server-rhoai/tools/pod_tools.go) — pod tools
-- [tools/storage_tools.go](mdc:../mcp-server-rhoai/tools/storage_tools.go) — PVC/storage tools
-- [tools/resource_consumption_tools.go](mdc:../mcp-server-rhoai/tools/resource_consumption_tools.go) — resource usage tools
-- [tools/common.go](mdc:../mcp-server-rhoai/tools/common.go) — shared tool helpers
-- [tools/registry.go](mdc:../mcp-server-rhoai/tools/registry.go) — tool registration
-- [prompts/create_workbench_prompt.go](mdc:../mcp-server-rhoai/prompts/create_workbench_prompt.go) — MCP prompt definitions
-- [prompts/registry.go](mdc:../mcp-server-rhoai/prompts/registry.go) — prompt registration
-- [resources/image_catalog.go](mdc:../mcp-server-rhoai/resources/image_catalog.go) — image catalog resource
-- [resources/default_hardware_profile.go](mdc:../mcp-server-rhoai/resources/default_hardware_profile.go) — default hardware profile resource
-- [resources/registry.go](mdc:../mcp-server-rhoai/resources/registry.go) — resource registration
-- [go.mod](mdc:../mcp-server-rhoai/go.mod) — Go module and dependencies
-- [README.md](mdc:../mcp-server-rhoai/README.md) — project documentation
+- [main.go](mdc:../mcp-server-rhoai-workbenches/main.go) — entry point and server setup
+- [core/types.go](mdc:../mcp-server-rhoai-workbenches/core/types.go) — shared types
+- [core/logging.go](mdc:../mcp-server-rhoai-workbenches/core/logging.go) — logging setup
+- [tools/workbench_tools.go](mdc:../mcp-server-rhoai-workbenches/tools/workbench_tools.go) — workbench create/list/delete/status tools
+- [tools/hardware_profile_tools.go](mdc:../mcp-server-rhoai-workbenches/tools/hardware_profile_tools.go) — hardware profile tools
+- [tools/image_tools.go](mdc:../mcp-server-rhoai-workbenches/tools/image_tools.go) — notebook image tools
+- [tools/namespace_tools.go](mdc:../mcp-server-rhoai-workbenches/tools/namespace_tools.go) — namespace tools
+- [tools/pod_tools.go](mdc:../mcp-server-rhoai-workbenches/tools/pod_tools.go) — pod tools
+- [tools/storage_tools.go](mdc:../mcp-server-rhoai-workbenches/tools/storage_tools.go) — PVC/storage tools
+- [tools/resource_consumption_tools.go](mdc:../mcp-server-rhoai-workbenches/tools/resource_consumption_tools.go) — resource usage tools
+- [tools/common.go](mdc:../mcp-server-rhoai-workbenches/tools/common.go) — shared tool helpers
+- [tools/registry.go](mdc:../mcp-server-rhoai-workbenches/tools/registry.go) — tool registration
+- [prompts/create_workbench_prompt.go](mdc:../mcp-server-rhoai-workbenches/prompts/create_workbench_prompt.go) — MCP prompt definitions
+- [prompts/registry.go](mdc:../mcp-server-rhoai-workbenches/prompts/registry.go) — prompt registration
+- [resources/image_catalog.go](mdc:../mcp-server-rhoai-workbenches/resources/image_catalog.go) — image catalog resource
+- [resources/default_hardware_profile.go](mdc:../mcp-server-rhoai-workbenches/resources/default_hardware_profile.go) — default hardware profile resource
+- [resources/registry.go](mdc:../mcp-server-rhoai-workbenches/resources/registry.go) — resource registration
+- [go.mod](mdc:../mcp-server-rhoai-workbenches/go.mod) — Go module and dependencies
+- [README.md](mdc:../mcp-server-rhoai-workbenches/README.md) — project documentation
 
 Always follow these rules when writing or editing `.tex` content:
 

@@ -59,7 +59,7 @@
     consultant  = {Ing. Jan Štourač},
     title       = {Implementation of MCP Server for Red Hat OpenShift AI Workbenches},
     TeXtitle    = {Implementation of MCP Server for Red Hat OpenShift AI Workbenches},
-    keywords    = {MCP,AI, Agents, RHOAI, Workbench, Kubernetes, Kubeflow},
+    keywords    = {MCP, AI, Agents, RHOAI, Workbench, Kubernetes, Kubeflow},
     TeXkeywords = {MCP, AI, Agents, RHOAI, Workbench, Kubernetes, Kubeflow},
     abstract    = {
       Red Hat OpenShift AI is an enterprise machine-learning platform
@@ -103,8 +103,8 @@
       for the final text and code presented in this thesis.
     },
     thanks = {
-      I would like to thank my consultant Ing. Jan Štourač and my advisor RNDr. Martin Ukrop, Ph.D. for their feedback, guidance and support 
-      with writing this thesis. Big thank you also goes to my family for always supporting my studies and my work.
+      I would like to thank my consultant Ing. Jan Štourač and my advisor RNDr. Martin Ukrop, Ph.D. for their feedback, guidance and support
+      with writing this thesis. A big thank you also goes to my family for always supporting my studies and my work.
     },
 }
 \usepackage{makeidx}      %% The `makeidx` package contains
@@ -145,7 +145,7 @@
 \chapter{Introduction}
 \label{chap:introduction}
 
-Large language models (LLMs) have rapidly evolved in recent years from
+Large language models (LLMs) have rapidly evolved since 2020 from
 conversational assistants into capable agents that can reason, plan, and take
 actions in the real world~\parencite{brown2020gpt3,yao2022react}. This shift
 has been made possible by the ability to give LLMs access to external
@@ -163,7 +163,7 @@ and data sources through a client-server architecture (see
 Section~\ref{sec:mcp}). Instead of each AI host maintaining its own
 integrations, any MCP-compatible host (Cursor, Claude Desktop, or a custom
 agent) can connect to any MCP server and immediately gain access to the
-capabilities it exposes. This has already led to a growing ecosystem of MCP
+capabilities it exposes. This has already led to an emerging ecosystem of MCP
 servers for services ranging from databases and file systems to cloud APIs
 and developer tools.
 
@@ -181,7 +181,7 @@ allowing users to manage their workbenches entirely through natural language
 --- simply describing what they want to an AI agent, which then carries out
 the necessary operations on their behalf.
 
-To achieve this, the thesis presents the design and implementation of an
+To achieve natural-language workbench management, this thesis presents the design and implementation of an
 MCP server that connects AI agents to RHOAI (Chapter~\ref{chap:analysis}
 derives the requirements and architecture; Chapter~\ref{chap:implementation}
 describes the implementation). The server covers the full workbench
@@ -224,7 +224,7 @@ making it possible to train large models on extensive datasets in a reasonable
 time.
 
 Modern LLMs are trained in two main stages. In the first stage,
-\textit{pre-training}, the model is exposed to hundreds of billions of
+\textit{pre-training}, the model is typically exposed to hundreds of billions to trillions of
 tokens of text and learns to predict the next token in a sequence. This
 process, while deceptively simple, causes the model to internalise broad
 world knowledge, reasoning patterns, and linguistic structure. In the second
@@ -339,7 +339,7 @@ to servers, enabling server-initiated interactions described in
 Section~\ref{subsec:mcp-client-capabilities}.
 
 A \textbf{server} is a lightweight process that exposes capabilities (tools, resources, and prompts) to
-clients~\parencite{mcp-spec}. A server typically wraps one specific external system --- a database,
+clients~\parencite{mcp-spec}. A server typically wraps a specific external system --- a database,
 a cloud API, a file system, or a cloud platform. It contains the actual implementation of each capability.
 When a tool is invoked, the server executes the corresponding logic and
 returns the result. The server does not communicate with the LLM directly --- it only
@@ -566,7 +566,7 @@ architectural concepts that are relevant to workbench management.
 \paragraph{Nodes and the control plane.}
 A Kubernetes cluster consists of a \emph{control plane} and a set of worker
 machines called \emph{nodes}. The control plane runs the API server, scheduler,
-and controller manager, which together accept user requests, decide where
+and controller manager. Together, these components accept user requests, decide where
 workloads should run, and ensure the desired state is maintained. Each worker
 node runs a \texttt{kubelet} agent that manages the \emph{pods} (the smallest
 deployable units, described below) scheduled on that node and reports status
@@ -717,9 +717,9 @@ the commercial platform described in the next subsection is built.
 \subsection{Red Hat OpenShift AI}
 \label{subsec:rhoai-platform}
 
-Red Hat OpenShift AI (RHOAI) is Red Hat's commercial machine-learning platform
+Red Hat OpenShift AI (RHOAI)~\parencite{rhoai-docs} is Red Hat's commercial machine-learning platform
 derived from Open Data Hub and built on top of
-OpenShift~\parencite{rhoai-docs}. It packages the same core components as ODH
+OpenShift. It packages the same core components as ODH
 but adds enterprise hardening, certified Operators, and commercial support.
 RHOAI is installed on an OpenShift cluster as an Operator and provides a
 web-based \emph{dashboard} --- a graphical interface from which users can
@@ -778,7 +778,7 @@ In Red Hat OpenShift AI, a \emph{workbench} is a Kubeflow \texttt{Notebook}
 resource enriched with additional annotations and integrated into the RHOAI
 dashboard~\parencite{rhoai-workbenches}. The RHOAI dashboard is the primary
 way users interact with workbenches today. When a user creates a workbench
-through the dashboard, it constructs a \texttt{Notebook} manifest with
+through the dashboard, the dashboard constructs a \texttt{Notebook} manifest with
 RHOAI-specific annotations such as:
 
 \begin{compactitem}
@@ -860,7 +860,7 @@ It is worth noting that the current implementation targets the existing
 Kubeflow-based workbench architecture described in
 Chapter~\ref{chap:rhoai} and is intended as a proof of concept.
 Notebooks~2.0~\parencite{notebooks-v2}, a redesigned notebook subsystem, is
-expected to be released and integrated into RHOAI later this year. The
+under active development for future integration into RHOAI. The
 implications of this transition and the changes it will require in the MCP
 server are discussed in Section~\ref{sec:future-work}.
 
@@ -996,7 +996,7 @@ implementation.
 
 \paragraph{Go.}
 The server is written in Go~\parencite{go-lang}. Go was chosen for two
-reasons. First, it is the dominant language in the Kubernetes ecosystem ---
+reasons. First, it is the primary language for Kubernetes core components ---
 Kubernetes itself, OpenShift, and the Kubeflow Notebook Controller are all
 written in Go, and the official Kubernetes client library
 (\texttt{client-go}) is a Go module. Using Go means the server can import
@@ -1203,15 +1203,17 @@ practices, and the evaluation methodology.
 \section{MCP Tools}
 \label{sec:tools}
 
-The server exposes 20 MCP tools covering five resource domains. Each
+The server exposes 22 MCP tools covering five resource domains. Each
 subsection below opens with a table listing its tools and then discusses
 the design decisions and non-trivial implementation details. In all
 tables, tools marked \textit{(write)} are only registered when the
 environment variable \texttt{MCP\_RHOAI\_MODE=write} is set; all other
-tools are always available. Notably, several listing operations that
-require no parameters (such as listing images, hardware profiles, and
-namespaces) are exposed as MCP resources rather than tools, providing a
-cleaner interface for clients (Section~\ref{sec:resources-prompts}).
+tools are always available. Although listing images and hardware
+profiles could be implemented as parameter-less MCP resources, they are
+exposed as tools to enable evaluation of the agent's ability to invoke
+them (Section~\ref{sec:evaluation}). Namespace listing, which is less
+central to the workbench workflow, is exposed only as an MCP resource
+(Section~\ref{sec:resources-prompts}).
 
 Each tool is registered with the MCP server using the SDK's
 \texttt{mcp.AddTool} function, which accepts a \texttt{mcp.Tool}
@@ -1312,6 +1314,7 @@ not lost.
 \toprule
 \textbf{Tool} & \textbf{Description} \\
 \midrule
+\texttt{list\_hardware\_profiles}    & List all available hardware profiles \\
 \texttt{create\_hardware\_profile}   & Create a new profile \textit{(write)} \\
 \texttt{update\_hardware\_profile}   & Merge-update profile resources \textit{(write)} \\
 \texttt{delete\_hardware\_profile}   & Delete a profile \textit{(write)} \\
@@ -1319,19 +1322,18 @@ not lost.
 \end{tabularx}
 \end{table}
 
-Table~\ref{tab:tools-hw} lists the three tools that manage hardware profiles
+Table~\ref{tab:tools-hw} lists the four tools that manage hardware profiles
 (API group
-\texttt{infrastructure.opendatahub.io/\allowbreak v1}). Listing available profiles
-is handled by the Hardware Profiles MCP resource
-(Section~\ref{subsec:hw-profiles-resource}), which returns
-each profile's resource identifiers with their default, minimum, and
-maximum values. Creation and deletion are straightforward
-operations on \texttt{unstructured.Unstructured} objects.
+\texttt{infrastructure.opendatahub.io/\allowbreak v1}). The
+\texttt{list\_hardware\_profiles} tool returns each profile's resource
+identifiers with their default, minimum, and maximum values. Creation and
+deletion are straightforward operations on
+\texttt{unstructured.Unstructured} objects.
 
 The more interesting case is \texttt{update\_hardware\_profile}, which
 implements a \emph{merge} strategy: it fetches the existing
 profile, iterates over the provided resource entries, and overwrites
-any entry whose resource identifier already exists while appending new
+any entry whose resource identifier already exists, while appending new
 ones. This means the agent can add a GPU to an existing profile without
 having to re-specify the CPU and memory entries, which makes the tool
 more natural to use through conversational interaction.
@@ -1347,6 +1349,7 @@ more natural to use through conversational interaction.
 \toprule
 \textbf{Tool} & \textbf{Description} \\
 \midrule
+\texttt{list\_images}          & List all available notebook images \\
 \texttt{create\_custom\_image} & Register a custom image \textit{(write)} \\
 \texttt{update\_image}         & Update display name or description \textit{(write)} \\
 \texttt{delete\_image}         & Delete with safety checks \textit{(write)} \\
@@ -1355,18 +1358,18 @@ more natural to use through conversational interaction.
 \end{table}
 
 \begin{sloppypar}
-Table~\ref{tab:tools-images} lists the three notebook image tools.
+Table~\ref{tab:tools-images} lists the four notebook image tools.
 Notebook images are represented as OpenShift ImageStreams (API group
 \texttt{image.openshift.io/v1}) labelled with
-\texttt{opendatahub.io/\allowbreak notebook-image=true}. Listing available images
-is handled by the Image Catalog MCP resource
-(Section~\ref{subsec:image-catalog}), which formats each image's display
-name, container image URL, and version tags with their Python dependencies
-into a structured JSON response. The \texttt{create\_custom\_image} tool
-registers a new ImageStream with a single \texttt{latest} tag, setting
-the labels and annotations required for dashboard visibility. The
-\texttt{update\_image} tool modifies the display name or description
-annotations.
+\texttt{opendatahub.io/\allowbreak notebook-image=true}. The
+\texttt{list\_images} tool formats each image's display name, container
+image URL, and version tags with their Python dependencies into a
+structured response; this information is also available through the
+Image Catalog MCP resource (Section~\ref{subsec:image-catalog}). The
+\texttt{create\_custom\_image} tool registers a new ImageStream with a
+single \texttt{latest} tag, setting the labels and annotations required
+for dashboard visibility. The \texttt{update\_image} tool modifies the
+display name or description annotations.
 \end{sloppypar}
 
 The most notable tool in this group is \texttt{delete\_image}, which
@@ -1404,8 +1407,7 @@ Table~\ref{tab:tools-storage} lists the storage and infrastructure tools.
 The \texttt{list\_pvcs} tool lists all PVCs in a namespace; listing
 cluster namespaces is handled by the Namespaces MCP resource
 (Section~\ref{subsec:namespaces-resource}). The \texttt{list\_pods} tool
-(registered only in write mode) provides basic cluster inspection, useful
-for debugging workbench issues such as \texttt{CrashLoopBackOff} states.
+(registered only in write mode) provides an overview of pods in a namespace.
 
 The \texttt{create\_pvc} tool creates a PVC with the specified name and
 size. The \texttt{update\_pvc} tool handles PVC
@@ -1462,11 +1464,15 @@ resources has user X reserved across the cluster?}
 
 Beyond tools, the server exposes three MCP resources and one MCP prompt.
 Together with the tools described above, these demonstrate all three
-MCP server primitives in a real-world scenario. Notably, listing operations
-that require no parameters --- images, hardware profiles, and namespaces ---
-are exposed as resources rather than tools. This design follows the MCP
-specification's guidance that resources are appropriate for data that the
-client can read without needing to provide input parameters.
+MCP server primitives in a real-world scenario. The Image Catalog
+resource duplicates the \texttt{list\_images} tool to provide an
+alternative parameter-less interface, while the Default Hardware Profile
+resource exposes only the built-in fallback profile (the
+\texttt{list\_hardware\_profiles} tool covers cluster-defined profiles).
+The Namespaces resource remains the sole way to discover available
+namespaces, following the MCP specification's guidance that resources
+are appropriate for data that the client can read without input
+parameters.
 
 \subsection{Image Catalog Resource}
 \label{subsec:image-catalog}
@@ -1482,21 +1488,25 @@ container image URL from the ImageStream's \texttt{status.docker\-Image\-Reposit
 field, and all version tags with their Python dependency and software
 annotations. The result is serialised as a JSON array and returned to the
 host. An agent can read this resource before creating a workbench to
-discover which images are available and select a suitable one.
+discover which images are available and select a suitable one. The
+\texttt{list\_images} tool provides the same functionality and shares the
+underlying \texttt{GetImages} function; the resource existed first, but
+the tool was later added to enable evaluation of tool invocation
+(Section~\ref{sec:evaluation}).
 \end{sloppypar}
 
-\subsection{Hardware Profiles Resource}
+\subsection{Default Hardware Profile Resource}
 \label{subsec:hw-profiles-resource}
 
 \begin{sloppypar}
-The Hardware Profiles resource is registered with the URI
-\texttt{resource://mcp-server-rhoai/\allowbreak hardware-profiles} and the MIME type
-\texttt{application/json}. When read, it queries all HardwareProfile custom
-resources in the RHOAI namespace and returns each profile's resource
-identifiers with their default, minimum, and maximum values. This resource
-replaces what was previously a listing tool, providing a cleaner interface
-for clients that simply need to discover available profiles before creating
-or updating a workbench.
+The Default Hardware Profile resource is registered with the URI
+\texttt{resource://mcp-server-rhoai/\allowbreak default-hardware-profile} and the
+MIME type \texttt{application/json}. When read, it returns a built-in
+default profile specifying 2~CPUs (range 1--4) and 4\,GiB of memory
+(range 2--8\,GiB). This profile is used when creating a workbench without
+an explicit hardware profile specification. To discover all available
+hardware profiles defined in the cluster, agents use the
+\texttt{list\_hardware\_profiles} tool instead.
 \end{sloppypar}
 
 \subsection{Namespaces Resource}
@@ -1607,8 +1617,8 @@ and restores the original on cleanup. Some tools that depend on other
 tools internally (for example, the resource consumption tools call the
 workbench listing logic) use additional function-level mocks such as
 \texttt{listWorkbenchesFn} that are replaced in tests with simple
-functions returning predefined data.
-The test suite comprises eight test files covering every tool domain:
+functions returning predefined data. Each tool domain includes tests for both success scenarios and error conditions.
+The test suite consists of eight test files covering every tool domain:
 
 \begin{compactitem}
   \item \textbf{Workbenches} --- tests for listing (stopped and running
@@ -1637,7 +1647,7 @@ The test suite comprises eight test files covering every tool domain:
 \label{sec:evaluation}
 
 Unit tests verify that each tool behaves correctly in isolation, but they
-cannot answer the question that matters most: will an AI agent actually use
+cannot answer the question that matters most: will an AI agent use
 these tools successfully? The value of an MCP server depends entirely on
 whether language models can interpret natural-language requests, select
 appropriate tools, and extract correct parameters from conversational input.
@@ -1678,7 +1688,7 @@ a single F1 score.
 \subsection{Test Cases}
 \label{subsec:eval-cases}
 
-The evaluation suite includes 22~test cases organised into seven categories,
+The evaluation suite includes 24~test cases organised into seven categories,
 providing comprehensive coverage of all tool domains:
 
 \begin{compactitem}
@@ -1689,10 +1699,12 @@ providing comprehensive coverage of all tool domains:
         deleting workbenches, plus starting and stopping them via the status
         change tool.
   \item \textbf{Pods} (1~test) --- listing pods within a specific namespace.
-  \item \textbf{Notebook images} (3~tests) --- creating custom images with
-        name and location, updating image metadata, and deleting images.
-  \item \textbf{Hardware profiles} (3~tests) --- creating, updating, and
-        deleting hardware profiles with resource specifications.
+  \item \textbf{Notebook images} (4~tests) --- listing available images,
+        creating custom images with name and location, updating image
+        metadata, and deleting images.
+  \item \textbf{Hardware profiles} (4~tests) --- listing available profiles,
+        creating, updating, and deleting hardware profiles with resource
+        specifications.
   \item \textbf{Storage} (3~tests) --- listing PVCs in a namespace,
         creating a PVC with a specified size, and resizing an existing PVC.
   \item \textbf{Resource consumption} (5~tests) --- querying consumption
@@ -1701,10 +1713,9 @@ providing comprehensive coverage of all tool domains:
 \end{compactitem}
 
 Promptfoo evaluates only tool-calling behaviour; it does not support testing
-MCP resources or prompts. Consequently, the listing operations that are exposed
-as resources (available notebook images, hardware profiles, and namespaces) are
-not covered by this automated evaluation. Their correctness is verified through
-manual testing and unit tests instead.
+MCP resources or prompts. Consequently, the Namespaces resource is not covered
+by this automated evaluation and is verified through manual testing and unit
+tests instead.
 
 Each test case verifies both tool selection (via the \texttt{tool-call-f1}
 metric) and parameter extraction (via \texttt{contains} assertions that
@@ -1731,12 +1742,13 @@ assertion types as the tool set evolves.
 
 The evaluation was run using Google Gemini~2.5~Pro as the LLM provider. The
 evaluation was executed multiple times to verify consistency, and every run
-achieved a 100\% pass rate: all 22~test cases passed, with 52~individual
-assertions verified successfully. This consistent result across repeated runs
-demonstrates that the tool names, descriptions, and parameter schemas are
-sufficiently clear for a state-of-the-art language model to reliably select
-the correct tool and extract the required parameters from natural-language
-requests.
+achieved a 100\% pass rate: all 24~test cases passed, with 54~individual
+assertions verified successfully. The results of the last three runs are
+available in the attached \texttt{promptfoo-results.json} file. This
+consistent result across repeated runs demonstrates that the tool names,
+descriptions, and parameter schemas are sufficiently clear for a
+state-of-the-art language model to reliably select the correct tool and
+extract the required parameters from natural-language requests.
 
 Running the evaluation iteratively during development proved valuable for
 improving tool descriptions. Early runs revealed cases where the model
@@ -1777,7 +1789,7 @@ License~2.0~\parencite{mcp-server-rhoai-repo}.
 
 The five goals stated in Section~\ref{sec:motivation} have been met.
 The server provides \textbf{full workbench lifecycle coverage} through
-20~tools covering five resource domains: workbenches, notebook images,
+22~tools covering five resource domains: workbenches, notebook images,
 hardware profiles, persistent storage, and namespaces.
 \textbf{Resource consumption monitoring} is available at four
 granularities --- per workbench, per namespace, per user, and
@@ -1790,12 +1802,12 @@ environment variable, so that unregistered tools are never advertised to
 the host. \textbf{Quality assurance} is covered by unit tests that use
 centralised fake-client helpers to validate every tool domain against a
 simulated cluster, and by an automated Promptfoo evaluation comprising
-22~test cases that achieved a 100\% pass rate with Gemini~2.5~Pro ---
+24~test cases that achieved a 100\% pass rate with Gemini~2.5~Pro ---
 verifying both tool selection and parameter extraction. The iterative
 evaluation process also helped refine tool descriptions for better
 cross-model compatibility. Finally, the server \textbf{exercises all three
-MCP primitives} --- tools, three resources (Image Catalog, Hardware
-Profiles, and Namespaces), and a Create Workbench prompt --- demonstrating
+MCP primitives} --- tools, three resources (Image Catalog, Default
+Hardware Profile, and Namespaces), and a Create Workbench prompt --- demonstrating
 how they can all work together in a guided workflow.
 
 Because RHOAI is transitioning from the current Kubeflow-based
@@ -1817,8 +1829,7 @@ carried forward.
 
 Kubeflow Notebooks~2.0, officially called \textit{Kubeflow
 Workspaces}~\parencite{notebooks-v2}, is a complete redesign of the
-notebook subsystem that is expected to be integrated into RHOAI later
-this year. The redesign replaces the single
+notebook subsystem under active development for future integration into RHOAI. The redesign replaces the single
 \texttt{Notebook} CRD (\texttt{kubeflow.org/v1}) with two new custom
 resources under the API group
 \texttt{kubeflow.org/v1beta1}~\parencite{notebooks-v2-design}: a
@@ -1873,14 +1884,14 @@ idle status.
 The electronic attachment accompanying this thesis contains the following:
 
 \begin{description}
-  \item[mcp-server-rhoai/] The complete source code of the MCP server
+  \item[mcp-server-rhoai-workbenches/] The complete source code of the MCP server
         implementation described in Chapter~\ref{chap:implementation}.
         The directory structure mirrors the project layout described in
         Section~\ref{subsec:project-structure}, including:
         \begin{compactitem}
           \item \texttt{main.go} --- the entry point
           \item \texttt{core/} --- shared types and Kubernetes client helpers
-          \item \texttt{tools/} --- all 20 MCP tool implementations
+          \item \texttt{tools/} --- all 22 MCP tool implementations
           \item \texttt{resources/} --- MCP resource implementations
           \item \texttt{prompts/} --- MCP prompt implementation
           \item \texttt{*\_test.go} --- unit test files
